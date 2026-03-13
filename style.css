@@ -1,0 +1,263 @@
+/**-----------------color palette--------------------*/
+:root {
+  --rubyRedColor: #a31621;
+  --lavanderBlushColor: #f6e8ea;
+  --deepSpaceBlueColor: #172a3a;
+  --darkTealColor: #004346;
+  --mintLeafColor: #09bc8a;
+  --pearlAquaColor: #84dcc6;
+}
+
+/**------------------ Base Layout ------------------*/
+/* Ensure full-height viewport and prevent bg repeat */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "JetBrains Mono", monospace;
+  margin: 0;
+  min-height: 100vh;
+
+  background: radial-gradient(
+    circle at center,
+    #1c364a 0%,
+    var(--deepSpaceBlueColor) 40%,
+    var(--darkTealColor) 70%,
+    #0a2a2c 100%
+  );
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/**-------------------pomodoroBox--------------------*/
+/* Main container for timer and buttons */
+#pomodoroBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  padding: 60px 80px;
+  border-radius: 40px;
+  width: 80%;
+  max-width: 600px;
+  min-height: 60vh;
+
+  background: var(--deepSpaceBlueColor);
+  /* Subtle depth with soft shadows */
+  box-shadow:
+    12px 12px 30px rgba(0, 0, 0, 0.4),
+    -12px -12px 30px rgba(132, 220, 198, 0.04);
+}
+/* Highlight box based on current mode */
+.workMode {
+  box-shadow:
+    12px 12px 30px rgba(0, 0, 0, 0.4),
+    -12px -12px 30px rgba(132, 220, 198, 0.04),
+    0 0 25px rgba(9, 188, 138, 0.35);
+}
+
+.breakMode {
+  box-shadow:
+    12px 12px 30px rgba(0, 0, 0, 0.4),
+    -12px -12px 30px rgba(132, 220, 198, 0.04),
+    0 0 25px rgba(163, 22, 33, 0.35);
+}
+
+
+/**-----------------buttonBox-------------------*/
+/* Layout for start/reset buttons */
+#buttonBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+
+/**-------------------buttons--------------------*/
+/* Shared button styling */
+.button {
+  font-family: inherit;
+  border: none;
+  outline: none;
+  cursor: pointer;
+
+  padding: 18px 28px;
+  border-radius: 50px;
+
+  margin: 20px;
+
+  background: var(--darkTealColor);
+  color: var(--pearlAquaColor);
+  font-weight: 600;
+
+  box-shadow:
+    6px 6px 16px rgba(0, 0, 0, 0.5),
+    -6px -6px 16px rgba(132, 220, 198, 0.06);
+
+  transition: all 0.2s ease;
+}
+
+/* Visual feedback on press */
+.button:active {
+  box-shadow:
+    inset 5px 5px 12px rgba(0, 0, 0, 0.6),
+    inset -5px -5px 12px rgba(132, 220, 198, 0.05);
+
+  transform: scale(0.97);
+}
+
+/* Circular play button */
+.button.play {
+  width: 75px;
+  height: 75px;
+  padding: 0;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.5rem;
+}
+
+/* Rectangular reset button */
+.button.reset {
+  height: 75px;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+
+  background: var(--deepSpaceBlueColor);
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.5),
+    -4px -4px 12px rgba(132, 220, 198, 0.04);
+}
+
+
+/**------------------ Timer Display ------------------*/
+/* Align digits horizontally with slight depth */
+#timer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  perspective: 1000px;
+}
+
+/* Glow effect when timer is active */
+.timerRunning {
+  text-shadow:
+    0 0 15px rgba(9, 188, 138, 0.7),
+    0 0 30px rgba(9, 188, 138, 0.4);
+}
+
+/* Each digit container */
+.digit {
+  width: 70px;
+  height: 100px;
+  position: relative;
+  font-size: 4rem;
+  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+  line-height: 100px;
+}
+
+/* Container for flip animation halves */
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Top half of flip */
+.top {
+  background: var(--deepSpaceBlueColor);
+  color: var(--pearlAquaColor);
+
+  position: absolute;
+  width: 100%;
+  height: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+
+  transform-origin: bottom;
+  overflow: hidden;
+
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Bottom half of flip */
+.bottom {
+  background: var(--darkTealColor);
+  color: var(--pearlAquaColor);
+
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  transform-origin: top;
+  overflow: hidden;
+
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Center digits vertically */
+.top span,
+.bottom span {
+  display: block;
+  height: 100px;
+}
+
+.top span {
+  transform: translateY(25%);
+}
+
+.bottom span {
+  transform: translateY(-25%);
+}
+
+/* Horizontal line separating flip halves */
+.digit::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+  background: rgba(132, 220, 198, 0.2);
+  z-index: 5;
+}
+
+/* Flip animation effect */
+.flip {
+  animation: flipDown 0.6s ease forwards;
+}
+
+/* Keyframes for flip transition */
+@keyframes flipDown {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-90deg);
+  }
+}
+
