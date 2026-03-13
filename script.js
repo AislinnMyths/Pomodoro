@@ -1,58 +1,57 @@
+/* --------------------------Global variables-------------------------- */
+let workDuration = 1500; /* 25 min */
+let shortBreakDuration = 300; /* 5 min */
+let longBreakDuration = 900; /* 15 min */
 
-/* --------------------------Variables Globales-------------------------- */
-let workDuration = 1500; // 25 minutos
-let shortBreakDuration = 300; // 5 minutos
-let longBreakDuration = 900; // 15 minutos
+let timeLeft = workDuration; /* starts in 25:00 */
+let running = false; /* timer stopped */
+let pomodoroCounter = 0; /* cycles counter */
+let currentMode = "work"; /* work, shortBreak, longBreak */
 
-let timeLeft = workDuration; // empieza en 25:00
-let running = false; // temporizador parado
-let pomodoroCounter = 0; // contador de ciclos
-let currentMode = "work"; // work, shortBreak, longBreak
+let timerInterval; /* will store the ID of setInterval */
 
-let timerInterval; // guardará el ID del setInterval
-
-/* elementos del DOM */
+/* elements of the DOM */
 const playPauseBtn = document.getElementById("playPause");
-/* --------------------------Funciones-------------------------- */
-/* actualiza los 4 dígitos del timer en el DOM */
+/* --------------------------Functions-------------------------- */
+/* Update the 4 digits of the timer in the DOM. */
 function updateDisplay() {
   let minutes = Math.floor(timeLeft / 60);
   let seconds = timeLeft % 60;
 
-  // Formatear a dos dígitos
+  // Format to two digits
   let minStr = minutes.toString().padStart(2, "0");
   let secStr = seconds.toString().padStart(2, "0");
 
-  // Separar en 4 dígitos
+  /* Split in 4 digits */
   let digits = minStr + secStr;
 
-  // Seleccionar los elementos .digit y actualizar su contenido
+  /* Select the .digit elements and update their content. */
   const digitElements = document.querySelectorAll(".digit .card .top span");
 
   for (let i = 0; i < 4; i++) {
     digitElements[i].textContent = digits[i];
   }
 }
-/* inicia el temporizador solo si no hay otro corriendo */
+/* start the timer only if no other timer is running */
 function startTimer() {
-   if (running) return; /* evita múltiples intervalos simultáneos*/
+  if (running) return; /* avoid multiple simultaneous intervals */
   running = true;
 
   timerInterval = setInterval(() => {
     timeLeft--;
     updateDisplay();
 
-    /* Cuando el tiempo llega a 0, termina el ciclo actual */
+    /* When the time reaches 0, the current cycle ends */
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       running = false;
-      /* Solo los bloques de trabajo completados incrementan el contador */
-      if(currentMode === "work"){
+      /* Only completed work blocks increase the counter */
+      if (currentMode === "work") {
         pomodoroCounter++;
       }
-      /* Cambiar automáticamente al siguiente modo */
+      /* Automatically switch to the next mode */
       changeMode();
-      /* Reinicia automáticamente el temporizador para el nuevo modo */
+      /* Automatically reset the timer for the new mode */
       startTimer();
 
       updateDisplay();
@@ -60,13 +59,13 @@ function startTimer() {
   }, 1000);
 }
 
-/* Pausar el temporizador */
+/* Pause the timer */
 function pauseTimer() {
   clearInterval(timerInterval);
   running = false;
 }
 
-/* alterna entre iniciar y pausar */
+/* switch between starting and pausing */
 function toggleTimer() {
   if (!running) {
     startTimer();
@@ -75,7 +74,7 @@ function toggleTimer() {
   }
 }
 
-/* resetea todo a valores iniciales */
+/* reset everything to default values */
 function resetTimer() {
   clearInterval(timerInterval);
   running = false;
@@ -86,7 +85,7 @@ function resetTimer() {
   updateDisplay();
 }
 
-/* Cambia el modo según el ciclo de Pomodoro y actualiza visual */
+/* Change mode according to the Pomodoro cycle and update visual */
 function changeMode() {
   if (currentMode === "work") {
     if (pomodoroCounter % 4 === 0) {
@@ -100,10 +99,9 @@ function changeMode() {
     currentMode = "work";
     timeLeft = workDuration;
   }
-  /* Actualiza el display para reflejar el nuevo tiempo */
-  updateDisplay();
+  /* Refresh the display to show the new time */
 
-  /* actualiza la parte visual (colores / sombras) */
+  /* update the visual elements (colors/shadows) */
   const pomodoroBox = document.getElementById("pomodoroBox");
   if (currentMode === "work") {
     pomodoroBox.classList.add("workMode");
@@ -114,15 +112,13 @@ function changeMode() {
   }
 }
 
-/* cambio visual del boton playPause segun estado */
+/* Visual change of the play/pause button based on its status */
 function updatePlayPauseBtn() {
-    if (running) {
-        
-    } else {
-        
-    }
+  if (running) {
+  } else {
+  }
 }
 
-/* ----------------------------Eventos-------------------------- */
+/* ----------------------------Events-------------------------- */
 document.getElementById("playPause").onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
