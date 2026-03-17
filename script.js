@@ -1,7 +1,7 @@
 /* --------------------------Global variables-------------------------- */
-let workDuration = 1500; /* 25 min */
-let shortBreakDuration = 300; /* 5 min */
-let longBreakDuration = 900; /* 15 min */
+let workDuration = 10; /* 1500 25 min */
+let shortBreakDuration = 5; /* 300 5 min */
+let longBreakDuration = 8; /* 900 15 min */
 
 let timeLeft = workDuration; /* starts in 25:00 */
 let running = false; /* timer stopped */
@@ -12,7 +12,11 @@ let timerInterval; /* will store the ID of setInterval */
 
 /* elements of the DOM */
 const playPauseBtn = document.getElementById("playPause");
+const playPauseIcon = playPauseBtn.querySelector("span");
+const modeTitle = document.createElement("p");
+const pomodoroBox = document.getElementById("pomodoroBox");
 /* --------------------------Functions-------------------------- */
+
 /* Update the 4 digits of the timer in the DOM. */
 function updateDisplay() {
   let minutes = Math.floor(timeLeft / 60);
@@ -26,16 +30,20 @@ function updateDisplay() {
   let digits = minStr + secStr;
 
   /* Select the .digit elements and update their content. */
-  const digitElements = document.querySelectorAll(".digit .card .top span");
+  const topDigitElements = document.querySelectorAll(".top span");
+  const bottomDigitElements = document.querySelectorAll(".bottom span");
 
   for (let i = 0; i < 4; i++) {
-    digitElements[i].textContent = digits[i];
+    topDigitElements[i].textContent = digits[i];
+    bottomDigitElements[i].textContent = digits[i];
   }
 }
+
 /* start the timer only if no other timer is running */
 function startTimer() {
   if (running) return; /* avoid multiple simultaneous intervals */
   running = true;
+  updatePlayPauseBtn();
 
   timerInterval = setInterval(() => {
     timeLeft--;
@@ -63,6 +71,7 @@ function startTimer() {
 function pauseTimer() {
   clearInterval(timerInterval);
   running = false;
+  updatePlayPauseBtn();
 }
 
 /* switch between starting and pausing */
@@ -85,40 +94,51 @@ function resetTimer() {
   updateDisplay();
 }
 
+/* Add <p> and some default text  */
+pomodoroBox.appendChild(modeTitle);
+modeTitle.textContent = "Pomodoro";
+pomodoroBox.classList.add("workMode");
+
 /* Change mode according to the Pomodoro cycle and update visual */
 function changeMode() {
+  pomodoroBox.classList.remove("workMode", "shortBreakMode", "longBreakMode");
   if (currentMode === "work") {
     if (pomodoroCounter % 4 === 0) {
       currentMode = "longBreak";
       timeLeft = longBreakDuration;
+      modeTitle.textContent = "Long break";
+      pomodoroBox.classList.add("longBreakMode");
     } else {
       currentMode = "shortBreak";
       timeLeft = shortBreakDuration;
+      modeTitle.textContent = "Short break";
+      pomodoroBox.classList.add("shortBreakMode");
     }
   } else if (currentMode === "shortBreak" || currentMode === "longBreak") {
     currentMode = "work";
     timeLeft = workDuration;
+    modeTitle.textContent = "Pomodoro";
+    pomodoroBox.classList.add("workMode");
   }
   /* Refresh the display to show the new time */
-
-  /* update the visual elements (colors/shadows) */
-  const pomodoroBox = document.getElementById("pomodoroBox");
-  if (currentMode === "work") {
-    pomodoroBox.classList.add("workMode");
-    pomodoroBox.classList.remove("breakMode");
-  } else {
-    pomodoroBox.classList.add("breakMode");
-    pomodoroBox.classList.remove("workMode");
-  }
+  updateDisplay();
 }
 
 /* Visual change of the play/pause button based on its status */
 function updatePlayPauseBtn() {
   if (running) {
+    playPauseIcon.textContent = "⏸";
+    playPauseIcon.classList.remove("iconPlay");
+    playPauseBtn.classList.add("pauseColor");
   } else {
+    playPauseIcon.textContent = "▶";
+    playPauseIcon.classList.add("iconPlay");
+    playPauseBtn.classList.remove("pauseColor");
   }
 }
-
 /* ----------------------------Events-------------------------- */
 document.getElementById("playPause").onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
+
+updateDisplay();
+updatePlayPauseBtn();

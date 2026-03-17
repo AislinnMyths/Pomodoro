@@ -1,11 +1,16 @@
 /**-----------------color palette--------------------*/
 :root {
-  --rubyRedColor: #a31621;
-  --lavanderBlushColor: #f6e8ea;
-  --deepSpaceBlueColor: #172a3a;
-  --darkTealColor: #004346;
-  --mintLeafColor: #09bc8a;
-  --pearlAquaColor: #84dcc6;
+  --lightOrange: #ffa175;
+  --Orange: #bc4b1b; /*#e6591d*/
+
+  --darkRed: #460505; 
+  --redFire: #bd1e1e;
+  --lightRed: #f0aba0;
+
+  --midnightBlue: #172a3a;
+  --darkTeal: #004346;
+  --mintLeaf: #09bc8a;
+  --pearlAqua: #84dcc6;
 }
 
 /**------------------ Base Layout ------------------*/
@@ -23,8 +28,8 @@ body {
   background: radial-gradient(
     circle at center,
     #1c364a 0%,
-    var(--deepSpaceBlueColor) 40%,
-    var(--darkTealColor) 70%,
+    var(--midnightBlue) 40%,
+    var(--darkTeal) 70%,
     #0a2a2c 100%
   );
 
@@ -47,27 +52,26 @@ body {
   max-width: 600px;
   min-height: 60vh;
 
-  background: var(--deepSpaceBlueColor);
+  color: var(--pearlAqua);
+  background: var(--midnightBlue);
   /* Subtle depth with soft shadows */
   box-shadow:
     12px 12px 30px rgba(0, 0, 0, 0.4),
     -12px -12px 30px rgba(132, 220, 198, 0.04);
 }
-/* Highlight box based on current mode */
-.workMode {
-  box-shadow:
-    12px 12px 30px rgba(0, 0, 0, 0.4),
-    -12px -12px 30px rgba(132, 220, 198, 0.04),
-    0 0 25px rgba(9, 188, 138, 0.35);
-}
 
-.breakMode {
-  box-shadow:
-    12px 12px 30px rgba(0, 0, 0, 0.4),
-    -12px -12px 30px rgba(132, 220, 198, 0.04),
-    0 0 25px rgba(163, 22, 33, 0.35);
-}
+/**-----------------Title-----------------------*/
+#pomodoroBox > p {
+  justify-content: center;
+  align-items: flex-start;
+  order: -1;
+  margin: 0 0 25px 0;
 
+  font-size: 5vw;
+  font-weight: 600;
+  font-family: "Anton", sans-serif;
+  color: var(--pearlAqua);
+}
 
 /**-----------------buttonBox-------------------*/
 /* Layout for start/reset buttons */
@@ -78,7 +82,6 @@ body {
   gap: 20px;
 }
 
-
 /**-------------------buttons--------------------*/
 /* Shared button styling */
 .button {
@@ -88,12 +91,12 @@ body {
   cursor: pointer;
 
   padding: 18px 28px;
-  border-radius: 50px;
+  border-radius: 30%;
 
   margin: 20px;
 
-  background: var(--darkTealColor);
-  color: var(--pearlAquaColor);
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
   font-weight: 600;
 
   box-shadow:
@@ -117,13 +120,17 @@ body {
   width: 75px;
   height: 75px;
   padding: 0;
-  border-radius: 50%;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 1.5rem;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.button.play .iconPlay {
+  transform: translateX(3px) translateY(-3px);
 }
 
 /* Rectangular reset button */
@@ -133,12 +140,14 @@ body {
   display: flex;
   align-items: center;
 
-  background: var(--deepSpaceBlueColor);
+  font-size: 1rem;
+  font-weight: 800;
+
+  background: var(--midnightBlue);
   box-shadow:
     4px 4px 12px rgba(0, 0, 0, 0.5),
     -4px -4px 12px rgba(132, 220, 198, 0.04);
 }
-
 
 /**------------------ Timer Display ------------------*/
 /* Align digits horizontally with slight depth */
@@ -177,8 +186,8 @@ body {
 
 /* Top half of flip */
 .top {
-  background: var(--deepSpaceBlueColor);
-  color: var(--pearlAquaColor);
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
 
   position: absolute;
   width: 100%;
@@ -199,8 +208,8 @@ body {
 
 /* Bottom half of flip */
 .bottom {
-  background: var(--darkTealColor);
-  color: var(--pearlAquaColor);
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
 
   position: absolute;
   bottom: 0;
@@ -261,3 +270,129 @@ body {
   }
 }
 
+.top span,
+.bottom span {
+  overflow: hidden;
+}
+
+/**----------------Modes Style-------------------*/
+
+#pomodoroBox.workMode {
+  color: var(--pearlAqua);
+  background: var(--midnightBlue);
+}
+
+#pomodoroBox.longBreakMode {
+  color: var(--lightRed);
+  background: var(--darkRed);
+}
+
+#pomodoroBox.shortBreakMode {
+  color: var(--midnightBlue);
+  background: var(--Orange);
+}
+
+/*--------------------------------------------------*/
+#pomodoroBox.workMode .top {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.workMode .bottom {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.shortBreakMode .top {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.shortBreakMode .bottom {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.longBreakMode .top {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+
+#pomodoroBox.longBreakMode .bottom {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+/* --------------------------------------------------------- */
+#pomodoroBox.workMode .button.play {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.workMode .button.reset {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.workMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: var(--Orange);
+  background: radial-gradient(
+    circle,
+    rgba(246, 232, 234, 1) 0%,
+    rgba(255, 78, 0, 1) 100%
+  );
+}
+/* -------------------------------------------------------- */
+#pomodoroBox.shortBreakMode .button.play {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.shortBreakMode .button.reset {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.shortBreakMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: var(--Orange);
+  background: radial-gradient(
+    circle,
+    rgba(9, 188, 138, 1) 0%,
+    rgba(0, 67, 70, 1) 100%
+  );
+}
+
+/* -------------------------------------------------------- */
+#pomodoroBox.longBreakMode .button.play {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+
+#pomodoroBox.longBreakMode .button.reset {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+
+#pomodoroBox.longBreakMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: var(--Orange);
+  background: radial-gradient(
+    circle,
+    rgba(9, 188, 138, 1) 0%,
+    rgba(0, 67, 70, 1) 83%
+  );
+}
+
+/*----------------------------------------------------------*/
+#pomodoroBox.workMode > p {
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.shortBreakMode > p {
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.longBreakMode > p {
+  color: var(--lightRed);
+}
