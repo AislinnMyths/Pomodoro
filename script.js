@@ -1,7 +1,7 @@
-/* --------------------------Global variables-------------------------- */
-let workDuration = 10; /* 1500 25 min */
-let shortBreakDuration = 5; /* 300 5 min */
-let longBreakDuration = 8; /* 900 15 min */
+/* --------------------------Global variables-------------------- */
+const workDuration = 10; /* 1500 25 min */
+const shortBreakDuration = 5; /* 300 5 min */
+const longBreakDuration = 8; /* 900 15 min */
 
 let timeLeft = workDuration; /* starts in 25:00 */
 let running = false; /* timer stopped */
@@ -10,11 +10,17 @@ let currentMode = "work"; /* work, shortBreak, longBreak */
 
 let timerInterval; /* will store the ID of setInterval */
 
-/* elements of the DOM */
+/*------------------elements of the DOM-------------------------- */
+const pomodoroBox = document.getElementById("pomodoroBox");
+const modeTitle = document.createElement("p");
+pomodoroBox.classList.add("workMode");//default
+modeTitle.textContent = "Pomodoro"; //default
+pomodoroBox.appendChild(modeTitle);
 const playPauseBtn = document.getElementById("playPause");
 const playPauseIcon = playPauseBtn.querySelector("span");
-const modeTitle = document.createElement("p");
-const pomodoroBox = document.getElementById("pomodoroBox");
+const alarmSound = new Audio("./sounds/alarm.mp3");
+alarmSound.volume = 0.7; //default volume
+
 /* --------------------------Functions-------------------------- */
 
 /* Update the 4 digits of the timer in the DOM. */
@@ -59,69 +65,13 @@ function startTimer() {
       }
       /* Automatically switch to the next mode */
       changeMode();
-      /* Automatically reset the timer for the new mode */
-      startTimer();
 
       updateDisplay();
+
+      /* Automatically reset the timer for the new mode */
+      startTimer();
     }
   }, 1000);
-}
-
-/* Pause the timer */
-function pauseTimer() {
-  clearInterval(timerInterval);
-  running = false;
-  updatePlayPauseBtn();
-}
-
-/* switch between starting and pausing */
-function toggleTimer() {
-  if (!running) {
-    startTimer();
-  } else {
-    pauseTimer();
-  }
-}
-
-/* reset everything to default values */
-function resetTimer() {
-  clearInterval(timerInterval);
-  running = false;
-  timeLeft = workDuration;
-  pomodoroCounter = 0;
-  currentMode = "work";
-
-  updateDisplay();
-}
-
-/* Add <p> and some default text  */
-pomodoroBox.appendChild(modeTitle);
-modeTitle.textContent = "Pomodoro";
-pomodoroBox.classList.add("workMode");
-
-/* Change mode according to the Pomodoro cycle and update visual */
-function changeMode() {
-  pomodoroBox.classList.remove("workMode", "shortBreakMode", "longBreakMode");
-  if (currentMode === "work") {
-    if (pomodoroCounter % 4 === 0) {
-      currentMode = "longBreak";
-      timeLeft = longBreakDuration;
-      modeTitle.textContent = "Long break";
-      pomodoroBox.classList.add("longBreakMode");
-    } else {
-      currentMode = "shortBreak";
-      timeLeft = shortBreakDuration;
-      modeTitle.textContent = "Short break";
-      pomodoroBox.classList.add("shortBreakMode");
-    }
-  } else if (currentMode === "shortBreak" || currentMode === "longBreak") {
-    currentMode = "work";
-    timeLeft = workDuration;
-    modeTitle.textContent = "Pomodoro";
-    pomodoroBox.classList.add("workMode");
-  }
-  /* Refresh the display to show the new time */
-  updateDisplay();
 }
 
 /* Visual change of the play/pause button based on its status */
@@ -136,9 +86,65 @@ function updatePlayPauseBtn() {
     playPauseBtn.classList.remove("pauseColor");
   }
 }
+
+/* Change mode according to the Pomodoro cycle and update visual */
+function changeMode() {
+  pomodoroBox.classList.remove("workMode", "shortBreakMode", "longBreakMode");
+  if (currentMode === "work" && pomodoroCounter !== 0) {
+    if (pomodoroCounter === 4) {
+      pomodoroCounter = 0;
+      currentMode = "longBreak";
+      timeLeft = longBreakDuration;
+      modeTitle.textContent = "Long break";
+      pomodoroBox.classList.add("longBreakMode");
+    } else {
+      currentMode = "shortBreak";
+      timeLeft = shortBreakDuration;
+      modeTitle.textContent = "Short break";
+      pomodoroBox.classList.add("shortBreakMode");
+    }
+  } else {
+    currentMode = "work";
+    timeLeft = workDuration;
+    modeTitle.textContent = "Pomodoro";
+    pomodoroBox.classList.add("workMode");
+  }
+  /* Refresh the display to show the new time */
+  updateDisplay();
+
+  // alarm when switching modes
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch((err) => {
+    console.warn("The sound couldn't be played:", err);
+  });
+}
+
+/* Pause the timer */
+function pauseTimer() {
+  clearInterval(timerInterval);
+  running = false;
+  updatePlayPauseBtn();
+}
+
+/* switch between starting and pausing */
+function toggleTimer() {
+  (!running) ? startTimer() : pauseTimer();
+}
+
+/* reset everything to default values */
+function resetTimer() {
+  clearInterval(timerInterval);
+  running = false;
+  timeLeft = workDuration;
+  currentMode = "work";
+  pomodoroCounter = 0;
+  updateDisplay();
+  updatePlayPauseBtn();
+  changeMode();
+}
+
 /* ----------------------------Events-------------------------- */
 document.getElementById("playPause").onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
 
 updateDisplay();
-updatePlayPauseBtn();
