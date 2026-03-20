@@ -1,80 +1,64 @@
-/* --------------------------Global variables-------------------- */
-const workDuration = 10; /* 1500 25 min */
-const shortBreakDuration = 5; /* 300 5 min */
-const longBreakDuration = 8; /* 900 15 min */
+//* ── Config ─────────────────────────────────────────────────────────────────
+/* Single source of truth for durations and visual properties per mode.
+   To add or tweak a mode, only edit this object. */
+const MODES = {
+  work: {
+    duration: 10, // 1500 = 25 min
+    label: "Pomodoro",
+    cssClass: "workMode",
+  },
+  shortBreak: {
+    duration: 5, // 300 = 5 min
+    label: "Short break",
+    cssClass: "shortBreakMode",
+  },
+  longBreak: {
+    duration: 8, // 900 = 15 min
+    label: "Long break",
+    cssClass: "longBreakMode",
+  },
+};
 
-let timeLeft = workDuration; /* starts in 25:00 */
-let running = false; /* timer stopped */
-let pomodoroCounter = 0; /* cycles counter */
-let currentMode = "work"; /* work, shortBreak, longBreak */
+const POMODOROS_BEFORE_LONG_BREAK = 4;
 
-let timerInterval; /* will store the ID of setInterval */
+//* ── State ─────────────────────────────────────────────────────────────────
+let timeLeft = MODES.work.duration;
+let running = false;
+let pomodoroCount = 0;
+let currentMode = "work";
+let timerInterval = null;
 
-/*------------------elements of the DOM-------------------------- */
+//* ── DOM refs ──────────────────────────────────────────────────────────────
 const pomodoroBox = document.getElementById("pomodoroBox");
-const modeTitle = document.createElement("p");
-pomodoroBox.classList.add("workMode");//default
-modeTitle.textContent = "Pomodoro"; //default
-pomodoroBox.appendChild(modeTitle);
 const playPauseBtn = document.getElementById("playPause");
 const playPauseIcon = playPauseBtn.querySelector("span");
+const modeTitle = document.createElement("p");
 const alarmSound = new Audio("./sounds/alarm.mp3");
-alarmSound.volume = 0.7; //default volume
 
-/* --------------------------Functions-------------------------- */
+alarmSound.volume = 0.7;
+pomodoroBox.appendChild(modeTitle);
 
-/* Update the 4 digits of the timer in the DOM. */
+//* ── Display ───────────────────────────────────────────────────────────────
+
+/* Pads a number to two digits: 5 → "05" */
+const pad = (n) => String(n).padStart(2, "0");
+
+/* Writes all four digit slots from the current timeLeft */
 function updateDisplay() {
-  let minutes = Math.floor(timeLeft / 60);
-  let seconds = timeLeft % 60;
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const digits = pad(minutes) + pad(seconds);
 
-  // Format to two digits
-  let minStr = minutes.toString().padStart(2, "0");
-  let secStr = seconds.toString().padStart(2, "0");
+  const tops = document.querySelectorAll(".top span");
+  const bottoms = document.querySelectorAll(".bottom span");
 
-  /* Split in 4 digits */
-  let digits = minStr + secStr;
-
-  /* Select the .digit elements and update their content. */
-  const topDigitElements = document.querySelectorAll(".top span");
-  const bottomDigitElements = document.querySelectorAll(".bottom span");
-
-  for (let i = 0; i < 4; i++) {
-    topDigitElements[i].textContent = digits[i];
-    bottomDigitElements[i].textContent = digits[i];
-  }
+  digits.split("").forEach((d, i) => {
+    tops[i].textContent = d;
+    bottoms[i].textContent = d;
+  });
 }
 
-/* start the timer only if no other timer is running */
-function startTimer() {
-  if (running) return; /* avoid multiple simultaneous intervals */
-  running = true;
-  updatePlayPauseBtn();
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateDisplay();
-
-    /* When the time reaches 0, the current cycle ends */
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      running = false;
-      /* Only completed work blocks increase the counter */
-      if (currentMode === "work") {
-        pomodoroCounter++;
-      }
-      /* Automatically switch to the next mode */
-      changeMode();
-
-      updateDisplay();
-
-      /* Automatically reset the timer for the new mode */
-      startTimer();
-    }
-  }, 1000);
-}
-
-/* Visual change of the play/pause button based on its status */
+/* Syncs the play/pause button icon and colour class */
 function updatePlayPauseBtn() {
   if (running) {
     playPauseIcon.textContent = "⏸";
@@ -87,64 +71,90 @@ function updatePlayPauseBtn() {
   }
 }
 
-/* Change mode according to the Pomodoro cycle and update visual */
-function changeMode() {
-  pomodoroBox.classList.remove("workMode", "shortBreakMode", "longBreakMode");
-  if (currentMode === "work" && pomodoroCounter !== 0) {
-    if (pomodoroCounter === 4) {
-      pomodoroCounter = 0;
-      currentMode = "longBreak";
-      timeLeft = longBreakDuration;
-      modeTitle.textContent = "Long break";
-      pomodoroBox.classList.add("longBreakMode");
-    } else {
-      currentMode = "shortBreak";
-      timeLeft = shortBreakDuration;
-      modeTitle.textContent = "Short break";
-      pomodoroBox.classList.add("shortBreakMode");
-    }
-  } else {
-    currentMode = "work";
-    timeLeft = workDuration;
-    modeTitle.textContent = "Pomodoro";
-    pomodoroBox.classList.add("workMode");
-  }
-  /* Refresh the display to show the new time */
-  updateDisplay();
+//* ── Mode management ───────────────────────────────────────────────────────
 
-  // alarm when switching modes
-  alarmSound.currentTime = 0;
-  alarmSound.play().catch((err) => {
-    console.warn("The sound couldn't be played:", err);
-  });
+/* Applies a mode: updates state, DOM classes, title, and the countdown */
+function applyMode(modeName) {
+  const mode = MODES[modeName];
+  currentMode = modeName;
+  timeLeft = mode.duration;
+  modeTitle.textContent = mode.label;
+
+  // Swap CSS class — remove all mode classes first, then add the new one
+  Object.values(MODES).forEach(({ cssClass }) =>
+    pomodoroBox.classList.remove(cssClass),
+  );
+  pomodoroBox.classList.add(mode.cssClass);
+
+  updateDisplay();
 }
 
-/* Pause the timer */
+/* Returns the next mode name based on the Pomodoro cycle rules */
+function nextMode() {
+  if (currentMode !== "work") return "work";
+
+  pomodoroCount++;
+  if (pomodoroCount >= POMODOROS_BEFORE_LONG_BREAK) {
+    pomodoroCount = 0;
+    return "longBreak";
+  }
+  return "shortBreak";
+}
+
+//* ── Timer ─────────────────────────────────────────────────────────────────
+
+function startTimer() {
+  if (running) return; // guard against duplicate intervals
+  running = true;
+  updatePlayPauseBtn();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateDisplay();
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      running = false;
+
+      playAlarm();
+      applyMode(nextMode());
+      startTimer(); // auto-start the next session
+    }
+  }, 1000);
+}
+
 function pauseTimer() {
   clearInterval(timerInterval);
   running = false;
   updatePlayPauseBtn();
 }
 
-/* switch between starting and pausing */
+/* Toggles between start and pause */
 function toggleTimer() {
-  (!running) ? startTimer() : pauseTimer();
+  running ? pauseTimer() : startTimer();
 }
 
-/* reset everything to default values */
+/* Stops the timer and returns to the initial work session */
 function resetTimer() {
   clearInterval(timerInterval);
   running = false;
-  timeLeft = workDuration;
-  currentMode = "work";
-  pomodoroCounter = 0;
-  updateDisplay();
+  pomodoroCount = 0;
+  applyMode("work");
   updatePlayPauseBtn();
-  changeMode();
 }
 
-/* ----------------------------Events-------------------------- */
-document.getElementById("playPause").onclick = toggleTimer;
+//* ── Audio ─────────────────────────────────────────────────────────────────
+
+function playAlarm() {
+  alarmSound.currentTime = 0;
+  alarmSound
+    .play()
+    .catch((err) => console.warn("Audio playback blocked:", err));
+}
+
+//*── Init─────────────────────────────────────────────────────────────
+
+playPauseBtn.onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
 
-updateDisplay();
+applyMode("work"); // set initial state and render

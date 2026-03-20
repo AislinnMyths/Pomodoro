@@ -1,9 +1,9 @@
-/**-----------------color palette--------------------*/
+/** ── Color palette ───────────────────────────────────────────────────────── */
 :root {
   --lightOrange: #ffa175;
-  --Orange: #bc4b1b; /*#e6591d*/
+  --Orange: #bc4b1b;
 
-  --darkRed: #460505; 
+  --darkRed: #460505;
   --redFire: #bd1e1e;
   --lightRed: #f0aba0;
 
@@ -13,8 +13,7 @@
   --pearlAqua: #84dcc6;
 }
 
-/**------------------ Base Layout ------------------*/
-/* Ensure full-height viewport and prevent bg repeat */
+/** ── Base layout ─────────────────────────────────────────────────────────── */
 html,
 body {
   height: 100%;
@@ -24,7 +23,6 @@ body {
   font-family: "JetBrains Mono", monospace;
   margin: 0;
   min-height: 100vh;
-
   background: radial-gradient(
     circle at center,
     #1c364a 0%,
@@ -32,49 +30,40 @@ body {
     var(--darkTeal) 70%,
     #0a2a2c 100%
   );
-
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/**-------------------pomodoroBox--------------------*/
-/* Main container for timer and buttons */
+/** ── Pomodoro box ────────────────────────────────────────────────────────── */
 #pomodoroBox {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
   padding: 60px 80px;
   border-radius: 40px;
   width: 80%;
   max-width: 600px;
   min-height: 60vh;
-
   color: var(--pearlAqua);
   background: var(--midnightBlue);
-  /* Subtle depth with soft shadows */
   box-shadow:
     12px 12px 30px rgba(0, 0, 0, 0.4),
     -12px -12px 30px rgba(132, 220, 198, 0.04);
 }
 
-/**-----------------Title-----------------------*/
+/** ── Mode title ──────────────────────────────────────────────────────────── */
 #pomodoroBox > p {
-  justify-content: center;
-  align-items: flex-start;
   order: -1;
   margin: 0 0 25px 0;
-
   font-size: 5vw;
   font-weight: 600;
   font-family: "Anton", sans-serif;
-  color: var(--pearlAqua);
+  color: var(--pearlAqua); /* overridden per mode below */
 }
 
-/**-----------------buttonBox-------------------*/
-/* Layout for start/reset buttons */
+/** ── Button box ──────────────────────────────────────────────────────────── */
 #buttonBox {
   display: flex;
   align-items: center;
@@ -82,49 +71,37 @@ body {
   gap: 20px;
 }
 
-/**-------------------buttons--------------------*/
-/* Shared button styling */
+/** ── Shared button base ──────────────────────────────────────────────────── */
 .button {
   font-family: inherit;
   border: none;
   outline: none;
   cursor: pointer;
-
   padding: 18px 28px;
   border-radius: 30%;
-
   margin: 20px;
-
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
   font-weight: 600;
-
   box-shadow:
     6px 6px 16px rgba(0, 0, 0, 0.5),
     -6px -6px 16px rgba(132, 220, 198, 0.06);
-
   transition: all 0.2s ease;
 }
 
-/* Visual feedback on press */
 .button:active {
   box-shadow:
     inset 5px 5px 12px rgba(0, 0, 0, 0.6),
     inset -5px -5px 12px rgba(132, 220, 198, 0.05);
-
   transform: scale(0.97);
 }
 
-/* Circular play button */
+/* Play button */
 .button.play {
   width: 75px;
   height: 75px;
   padding: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   font-size: 2.5rem;
   line-height: 1;
 }
@@ -133,24 +110,20 @@ body {
   transform: translateX(3px) translateY(-3px);
 }
 
-/* Rectangular reset button */
+/* Reset button */
 .button.reset {
   height: 75px;
   padding: 0 30px;
   display: flex;
   align-items: center;
-
   font-size: 1rem;
   font-weight: 800;
-
-  background: var(--midnightBlue);
   box-shadow:
     4px 4px 12px rgba(0, 0, 0, 0.5),
     -4px -4px 12px rgba(132, 220, 198, 0.04);
 }
 
-/**------------------ Timer Display ------------------*/
-/* Align digits horizontally with slight depth */
+/** ── Timer display ───────────────────────────────────────────────────────── */
 #timer {
   display: flex;
   gap: 10px;
@@ -158,14 +131,13 @@ body {
   perspective: 1000px;
 }
 
-/* Glow effect when timer is active */
+/* Glow when running */
 .timerRunning {
   text-shadow:
     0 0 15px rgba(9, 188, 138, 0.7),
     0 0 30px rgba(9, 188, 138, 0.4);
 }
 
-/* Each digit container */
 .digit {
   width: 70px;
   height: 100px;
@@ -177,74 +149,7 @@ body {
   line-height: 100px;
 }
 
-/* Container for flip animation halves */
-.card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-/* Top half of flip */
-.top {
-  background: var(--midnightBlue);
-  color: var(--pearlAqua);
-
-  position: absolute;
-  width: 100%;
-  height: 50%;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px;
-
-  transform-origin: bottom;
-  overflow: hidden;
-
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
-
-/* Bottom half of flip */
-.bottom {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 50%;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  transform-origin: top;
-  overflow: hidden;
-
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-
-  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
-}
-
-/* Center digits vertically */
-.top span,
-.bottom span {
-  display: block;
-  height: 100px;
-}
-
-.top span {
-  transform: translateY(25%);
-}
-
-.bottom span {
-  transform: translateY(-25%);
-}
-
-/* Horizontal line separating flip halves */
+/* Dividing line between top/bottom halves */
 .digit::after {
   content: "";
   position: absolute;
@@ -255,107 +160,139 @@ body {
   z-index: 5;
 }
 
-/* Flip animation effect */
+.card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Shared half styles */
+.top,
+.bottom {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.top {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  transform-origin: bottom;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.bottom {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+  bottom: 0;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  transform-origin: top;
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Center digit text within each half */
+.top span,
+.bottom span {
+  display: block;
+  height: 100px;
+  overflow: hidden;
+}
+.top span {
+  transform: translateY(25%);
+}
+.bottom span {
+  transform: translateY(-25%);
+}
+
+/* Flip animation */
 .flip {
   animation: flipDown 0.6s ease forwards;
 }
 
-/* Keyframes for flip transition */
 @keyframes flipDown {
-  0% {
+  from {
     transform: rotateX(0deg);
   }
-  100% {
+  to {
     transform: rotateX(-90deg);
   }
 }
 
-.top span,
-.bottom span {
-  overflow: hidden;
-}
+/** ── Mode themes ─────────────────────────────────────────────────────────── */
+/*
+  Each mode overrides:
+    • box background + text color
+    • digit card colors
+    • button colors
+    • pause-state gradient
+*/
 
-/**----------------Modes Style-------------------*/
-
+/* -- Work -- */
 #pomodoroBox.workMode {
   color: var(--pearlAqua);
   background: var(--midnightBlue);
 }
-
-#pomodoroBox.longBreakMode {
-  color: var(--lightRed);
-  background: var(--darkRed);
+#pomodoroBox.workMode > p {
+  color: var(--pearlAqua);
 }
-
-#pomodoroBox.shortBreakMode {
-  color: var(--midnightBlue);
-  background: var(--Orange);
-}
-
-/*--------------------------------------------------*/
 #pomodoroBox.workMode .top {
   background: var(--midnightBlue);
   color: var(--pearlAqua);
 }
-
 #pomodoroBox.workMode .bottom {
   background: var(--darkTeal);
   color: var(--pearlAqua);
 }
-
-#pomodoroBox.shortBreakMode .top {
-  background: var(--Orange);
-  color: var(--midnightBlue);
-}
-
-#pomodoroBox.shortBreakMode .bottom {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-
-#pomodoroBox.longBreakMode .top {
-  background: var(--darkRed);
-  color: var(--lightRed);
-}
-
-#pomodoroBox.longBreakMode .bottom {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-/* --------------------------------------------------------- */
 #pomodoroBox.workMode .button.play {
   background: var(--darkTeal);
   color: var(--pearlAqua);
 }
-
 #pomodoroBox.workMode .button.reset {
   background: var(--midnightBlue);
   color: var(--pearlAqua);
 }
-
 #pomodoroBox.workMode .button.play.pauseColor {
   color: var(--midnightBlue);
-  background: var(--Orange);
   background: radial-gradient(
     circle,
     rgba(246, 232, 234, 1) 0%,
     rgba(255, 78, 0, 1) 100%
   );
 }
-/* -------------------------------------------------------- */
+
+/* -- Short break -- */
+#pomodoroBox.shortBreakMode {
+  color: var(--midnightBlue);
+  background: var(--Orange);
+}
+#pomodoroBox.shortBreakMode > p {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .top {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .bottom {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
 #pomodoroBox.shortBreakMode .button.play {
   background: var(--lightOrange);
   color: var(--midnightBlue);
 }
-
 #pomodoroBox.shortBreakMode .button.reset {
   background: var(--Orange);
   color: var(--midnightBlue);
 }
-
 #pomodoroBox.shortBreakMode .button.play.pauseColor {
   color: var(--midnightBlue);
-  background: var(--Orange);
   background: radial-gradient(
     circle,
     rgba(9, 188, 138, 1) 0%,
@@ -363,36 +300,35 @@ body {
   );
 }
 
-/* -------------------------------------------------------- */
+/* -- Long break -- */
+#pomodoroBox.longBreakMode {
+  color: var(--lightRed);
+  background: var(--darkRed);
+}
+#pomodoroBox.longBreakMode > p {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .top {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .bottom {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
 #pomodoroBox.longBreakMode .button.play {
   background: var(--redFire);
   color: var(--lightRed);
 }
-
 #pomodoroBox.longBreakMode .button.reset {
   background: var(--darkRed);
   color: var(--lightRed);
 }
-
 #pomodoroBox.longBreakMode .button.play.pauseColor {
   color: var(--midnightBlue);
-  background: var(--Orange);
   background: radial-gradient(
     circle,
     rgba(9, 188, 138, 1) 0%,
     rgba(0, 67, 70, 1) 83%
   );
-}
-
-/*----------------------------------------------------------*/
-#pomodoroBox.workMode > p {
-  color: var(--pearlAqua);
-}
-
-#pomodoroBox.shortBreakMode > p {
-  color: var(--midnightBlue);
-}
-
-#pomodoroBox.longBreakMode > p {
-  color: var(--lightRed);
 }
