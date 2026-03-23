@@ -225,6 +225,26 @@ body {
   }
 }
 
+/** ── Toast message ───────────────────────────────────────────────────────── */
+#toast {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0;
+  margin-top: 12px;
+  transition: opacity 0.5s ease;
+  pointer-events: none; /* never blocks clicks */
+  min-height: 1.2em; /* reserves space so layout doesn't shift */
+}
+
+#toast.toast-show {
+  opacity: 1;
+}
+#toast.toast-hide {
+  opacity: 0;
+}
+
 /** ── Mode themes ─────────────────────────────────────────────────────────── */
 /*
   Each mode overrides:
@@ -232,6 +252,7 @@ body {
     • digit card colors
     • button colors
     • pause-state gradient
+    • toast color
 */
 
 /* -- Work -- */
@@ -256,6 +277,9 @@ body {
 }
 #pomodoroBox.workMode .button.reset {
   background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #toast {
   color: var(--pearlAqua);
 }
 #pomodoroBox.workMode .button.play.pauseColor {
@@ -291,6 +315,9 @@ body {
   background: var(--Orange);
   color: var(--midnightBlue);
 }
+#pomodoroBox.shortBreakMode #toast {
+  color: var(--midnightBlue);
+}
 #pomodoroBox.shortBreakMode .button.play.pauseColor {
   color: var(--midnightBlue);
   background: radial-gradient(
@@ -324,6 +351,9 @@ body {
   background: var(--darkRed);
   color: var(--lightRed);
 }
+#pomodoroBox.longBreakMode #toast {
+  color: var(--lightRed);
+}
 #pomodoroBox.longBreakMode .button.play.pauseColor {
   color: var(--midnightBlue);
   background: radial-gradient(
@@ -331,4 +361,151 @@ body {
     rgba(9, 188, 138, 1) 0%,
     rgba(0, 67, 70, 1) 83%
   );
+}
+
+/** ── Progress bar ────────────────────────────────────────────────────────── */
+#progressBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 20px;
+  background: rgba(132, 220, 198, 0.12);
+  overflow: hidden;
+}
+
+#progressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* Fill color adapts to the current mode */
+#pomodoroBox.workMode #progressFill {
+  background: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode #progressFill {
+  background: var(--midnightBlue);
+}
+#pomodoroBox.longBreakMode #progressFill {
+  background: var(--lightRed);
+}
+
+/** ── Settings button ─────────────────────────────────────────────────────── */
+.button.settings {
+  height: 75px;
+  width: 75px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* Settings button color per mode */
+#pomodoroBox.workMode .button.settings {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode .button.settings {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.longBreakMode .button.settings {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+
+/** ── Settings panel ─────────────────────────────────────────────────────── */
+#settingsPanel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  max-height: 0; /* collapsed by default */
+  opacity: 0;
+  transition:
+    max-height 0.4s ease,
+    opacity 0.3s ease,
+    margin-top 0.4s ease;
+}
+
+/* Open state — toggled by JS */
+#settingsPanel.settings-open {
+  max-height: 400px;
+  opacity: 1;
+  margin-top: 24px;
+}
+
+/* Each label + input pair */
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-row label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.settings-row input {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 64px;
+  text-align: center;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 8px 0;
+  background: rgba(132, 220, 198, 0.08);
+  transition: background 0.2s ease;
+}
+
+.settings-row input:focus {
+  background: rgba(132, 220, 198, 0.18);
+}
+
+/* Input colors per mode */
+#pomodoroBox.workMode .settings-row input {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode .settings-row input {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.1);
+}
+#pomodoroBox.longBreakMode .settings-row input {
+  color: var(--lightRed);
+}
+
+/* Save button */
+.button.save {
+  align-self: flex-end;
+  height: auto;
+  padding: 10px 28px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 4px 0 0 0;
+}
+
+#pomodoroBox.workMode .button.save {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode .button.save {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.longBreakMode .button.save {
+  background: var(--redFire);
+  color: var(--lightRed);
 }

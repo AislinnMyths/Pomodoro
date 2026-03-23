@@ -3,40 +3,58 @@
    To add or tweak a mode, only edit this object. */
 const MODES = {
   work: {
-    duration: 10, // 1500 = 25 min
+    duration: 1500, // 1500 25 min
     label: "Pomodoro",
     cssClass: "workMode",
+    message: "Time to focus", // shown when entering this mode
   },
   shortBreak: {
-    duration: 5, // 300 = 5 min
+    duration: 300, // 300 5 min
     label: "Short break",
     cssClass: "shortBreakMode",
+    message: "Time for rest",
   },
   longBreak: {
-    duration: 8, // 900 = 15 min
+    duration: 900, // 900 15 min
     label: "Long break",
     cssClass: "longBreakMode",
+    message: "Time for rest",
   },
 };
 
-const POMODOROS_BEFORE_LONG_BREAK = 4;
+// let instead of const — user can change this from settings
+let POMODOROS_BEFORE_LONG_BREAK = 4;
 
 //* ── State ─────────────────────────────────────────────────────────────────
 let timeLeft = MODES.work.duration;
 let running = false;
-let pomodoroCount = 0;
+let pomodoroCount = 0; // work blocks in the current round (resets at 4)
+let completedCycles = 0; // full work+break cycles (drives the progress bar)
 let currentMode = "work";
 let timerInterval = null;
+let settingsOpen = false; // tracks whether the settings panel is visible
 
 //* ── DOM refs ──────────────────────────────────────────────────────────────
 const pomodoroBox = document.getElementById("pomodoroBox");
 const playPauseBtn = document.getElementById("playPause");
 const playPauseIcon = playPauseBtn.querySelector("span");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
 const modeTitle = document.createElement("p");
+const toast = document.createElement("div");
+const progressBar = document.createElement("div");
+const progressFill = document.createElement("div");
 const alarmSound = new Audio("./sounds/alarm.mp3");
 
 alarmSound.volume = 0.7;
+toast.id = "toast";
+progressBar.id = "progressBar";
+progressFill.id = "progressFill";
+
+progressBar.appendChild(progressFill);
 pomodoroBox.appendChild(modeTitle);
+pomodoroBox.appendChild(toast);
+pomodoroBox.appendChild(progressBar);
 
 //* ── Display ───────────────────────────────────────────────────────────────
 
@@ -56,6 +74,28 @@ function updateDisplay() {
     tops[i].textContent = d;
     bottoms[i].textContent = d;
   });
+}
+
+/* Shows a message below the timer for a few seconds, then fades out */
+const TOAST_DURATION_MS = 3000;
+let toastTimeout = null;
+
+function showToast(message) {
+  clearTimeout(toastTimeout); // cancel any in-progress toast
+  toast.textContent = message;
+  toast.classList.remove("toast-hide");
+  toast.classList.add("toast-show");
+
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("toast-show");
+    toast.classList.add("toast-hide");
+  }, TOAST_DURATION_MS);
+}
+
+/* Fills the progress bar proportionally to completedCycles */
+function updateProgressBar() {
+  const percent = (completedCycles / POMODOROS_BEFORE_LONG_BREAK) * 100;
+  progressFill.style.width = `${percent}%`;
 }
 
 /* Syncs the play/pause button icon and colour class */
@@ -89,10 +129,16 @@ function applyMode(modeName) {
   updateDisplay();
 }
 
-/* Returns the next mode name based on the Pomodoro cycle rules */
+/* Returns the next mode name and updates cycle/pomodoro counters */
 function nextMode() {
-  if (currentMode !== "work") return "work";
+  // A break just ended → one full cycle completed
+  if (currentMode !== "work") {
+    completedCycles++;
+    updateProgressBar();
+    return "work";
+  }
 
+  // A work block just ended → decide which break comes next
   pomodoroCount++;
   if (pomodoroCount >= POMODOROS_BEFORE_LONG_BREAK) {
     pomodoroCount = 0;
@@ -108,6 +154,11 @@ function startTimer() {
   running = true;
   updatePlayPauseBtn();
 
+  // Show the message only on the very first start, not on resume after pause
+  if (timeLeft === MODES[currentMode].duration) {
+    showToast(MODES[currentMode].message);
+  }
+
   timerInterval = setInterval(() => {
     timeLeft--;
     updateDisplay();
@@ -117,7 +168,9 @@ function startTimer() {
       running = false;
 
       playAlarm();
-      applyMode(nextMode());
+      const incoming = nextMode();
+      showToast(MODES[incoming].message);
+      applyMode(incoming);
       startTimer(); // auto-start the next session
     }
   }, 1000);
@@ -139,8 +192,54 @@ function resetTimer() {
   clearInterval(timerInterval);
   running = false;
   pomodoroCount = 0;
+  completedCycles = 0;
   applyMode("work");
+  updateProgressBar();
   updatePlayPauseBtn();
+}
+
+//* ── Settings ──────────────────────────────────────────────────────────────
+
+/* Populates the input fields with the current config values */
+function populateSettings() {
+  document.getElementById("inputWork").value = MODES.work.duration / 60;
+  document.getElementById("inputShortBreak").value =
+    MODES.shortBreak.duration / 60;
+  document.getElementById("inputLongBreak").value =
+    MODES.longBreak.duration / 60;
+  document.getElementById("inputPomodoros").value = POMODOROS_BEFORE_LONG_BREAK;
+}
+
+/* Opens or closes the settings panel */
+function toggleSettings() {
+  settingsOpen = !settingsOpen;
+  settingsPanel.classList.toggle("settings-open", settingsOpen);
+  // Fill inputs with current values every time the panel opens
+  if (settingsOpen) populateSettings();
+}
+
+/* Clamps a value between min and max to prevent invalid inputs */
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+/* Reads inputs, updates config, resets the timer */
+function saveSettings() {
+  // Read and sanitize — minutes to seconds, pomodoros as integer
+  MODES.work.duration =
+    clamp(parseInt(document.getElementById("inputWork").value), 1, 60) * 60;
+  MODES.shortBreak.duration =
+    clamp(parseInt(document.getElementById("inputShortBreak").value), 1, 60) *
+    60;
+  MODES.longBreak.duration =
+    clamp(parseInt(document.getElementById("inputLongBreak").value), 1, 60) *
+    60;
+  POMODOROS_BEFORE_LONG_BREAK = clamp(
+    parseInt(document.getElementById("inputPomodoros").value),
+    1,
+    8,
+  );
+
+  toggleSettings(); // close the panel
+  resetTimer(); // apply changes by restarting from scratch
 }
 
 //* ── Audio ─────────────────────────────────────────────────────────────────
@@ -152,9 +251,12 @@ function playAlarm() {
     .catch((err) => console.warn("Audio playback blocked:", err));
 }
 
-//*── Init─────────────────────────────────────────────────────────────
+//* ── Init ───────────────────────────────────────────────────────────────────
 
 playPauseBtn.onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
+settingsBtn.onclick = toggleSettings;
+document.getElementById("saveSettings").onclick = saveSettings;
 
 applyMode("work"); // set initial state and render
+updateProgressBar(); // render bar at 0%
