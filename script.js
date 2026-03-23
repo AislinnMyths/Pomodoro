@@ -3,19 +3,19 @@
    To add or tweak a mode, only edit this object. */
 const MODES = {
   work: {
-    duration: 1500, // 1500 25 min
+    duration: 1500, // 25 min
     label: "Pomodoro",
     cssClass: "workMode",
     message: "Time to focus", // shown when entering this mode
   },
   shortBreak: {
-    duration: 300, // 300 5 min
+    duration: 300, // 5 min
     label: "Short break",
     cssClass: "shortBreakMode",
     message: "Time for rest",
   },
   longBreak: {
-    duration: 900, // 900 15 min
+    duration: 900, // 15 min
     label: "Long break",
     cssClass: "longBreakMode",
     message: "Time for rest",
@@ -34,12 +34,18 @@ let currentMode = "work";
 let timerInterval = null;
 let settingsOpen = false; // tracks whether the settings panel is visible
 
+//* ── Task state ─────────────────────────────────────────────────────────────
+/* Each task: { id: number, text: string, completed: boolean } */
+let tasks = loadTasks();
+
 //* ── DOM refs ──────────────────────────────────────────────────────────────
 const pomodoroBox = document.getElementById("pomodoroBox");
 const playPauseBtn = document.getElementById("playPause");
 const playPauseIcon = playPauseBtn.querySelector("span");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
+const taskInput = document.getElementById("taskInput");
+const taskList = document.getElementById("taskList");
 const modeTitle = document.createElement("p");
 const toast = document.createElement("div");
 const progressBar = document.createElement("div");
@@ -214,7 +220,6 @@ function populateSettings() {
 function toggleSettings() {
   settingsOpen = !settingsOpen;
   settingsPanel.classList.toggle("settings-open", settingsOpen);
-  // Fill inputs with current values every time the panel opens
   if (settingsOpen) populateSettings();
 }
 
@@ -223,7 +228,6 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 /* Reads inputs, updates config, resets the timer */
 function saveSettings() {
-  // Read and sanitize — minutes to seconds, pomodoros as integer
   MODES.work.duration =
     clamp(parseInt(document.getElementById("inputWork").value), 1, 60) * 60;
   MODES.shortBreak.duration =
@@ -242,6 +246,79 @@ function saveSettings() {
   resetTimer(); // apply changes by restarting from scratch
 }
 
+//* ── Tasks ──────────────────────────────────────────────────────────────────
+
+/* Reads tasks from localStorage. Returns empty array if nothing is saved yet. */
+function loadTasks() {
+  const saved = localStorage.getItem("tasks");
+  return saved ? JSON.parse(saved) : [];
+}
+
+/* Writes the current tasks array to localStorage */
+function saveTasks() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+/* Rebuilds the task list in the DOM from the tasks array */
+function renderTasks() {
+  taskList.innerHTML = ""; // clear current list before redrawing
+
+  tasks.forEach((task) => {
+    const li = document.createElement("li");
+    const checkbox = document.createElement("input");
+    const label = document.createElement("span");
+    const delBtn = document.createElement("button");
+
+    checkbox.type = "checkbox";
+    checkbox.checked = task.completed;
+    label.textContent = task.text;
+    delBtn.textContent = "✕";
+    delBtn.className = "task-delete";
+
+    if (task.completed) li.classList.add("task-completed");
+
+    // Each button knows which task to act on via its id
+    checkbox.onclick = () => checkTask(task.id);
+    delBtn.onclick = () => deleteTask(task.id);
+
+    li.appendChild(checkbox);
+    li.appendChild(label);
+    li.appendChild(delBtn);
+    taskList.appendChild(li);
+  });
+}
+
+/* Adds a new task from the input field */
+function addTask() {
+  const text = taskInput.value.trim();
+  if (!text) return; // ignore empty input
+
+  tasks.push({
+    id: Date.now(), // unique id based on timestamp
+    text: text,
+    completed: false,
+  });
+
+  taskInput.value = ""; // clear the input after adding
+  saveTasks();
+  renderTasks();
+}
+
+/* Toggles the completed state of a task by id */
+function checkTask(id) {
+  const task = tasks.find((t) => t.id === id);
+  if (task) task.completed = !task.completed;
+  saveTasks();
+  renderTasks();
+}
+
+/* Removes a task by id */
+function deleteTask(id) {
+  tasks = tasks.filter((t) => t.id !== id);
+  saveTasks();
+  renderTasks();
+}
+
 //* ── Audio ─────────────────────────────────────────────────────────────────
 
 function playAlarm() {
@@ -257,6 +334,13 @@ playPauseBtn.onclick = toggleTimer;
 document.getElementById("reset").onclick = resetTimer;
 settingsBtn.onclick = toggleSettings;
 document.getElementById("saveSettings").onclick = saveSettings;
+document.getElementById("addTaskBtn").onclick = addTask;
+
+// Allow submitting a task by pressing Enter in the input field
+taskInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") addTask();
+});
 
 applyMode("work"); // set initial state and render
 updateProgressBar(); // render bar at 0%
+renderTasks(); // render any tasks saved from a previous session

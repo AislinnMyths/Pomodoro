@@ -402,7 +402,6 @@ body {
   font-size: 1.4rem;
 }
 
-/* Settings button color per mode */
 #pomodoroBox.workMode .button.settings {
   background: var(--midnightBlue);
   color: var(--pearlAqua);
@@ -423,7 +422,7 @@ body {
   flex-direction: column;
   gap: 14px;
   overflow: hidden;
-  max-height: 0; /* collapsed by default */
+  max-height: 0;
   opacity: 0;
   transition:
     max-height 0.4s ease,
@@ -431,14 +430,12 @@ body {
     margin-top 0.4s ease;
 }
 
-/* Open state — toggled by JS */
 #settingsPanel.settings-open {
   max-height: 400px;
   opacity: 1;
   margin-top: 24px;
 }
 
-/* Each label + input pair */
 .settings-row {
   display: flex;
   justify-content: space-between;
@@ -472,7 +469,6 @@ body {
   background: rgba(132, 220, 198, 0.18);
 }
 
-/* Input colors per mode */
 #pomodoroBox.workMode .settings-row input {
   color: var(--pearlAqua);
 }
@@ -484,7 +480,6 @@ body {
   color: var(--lightRed);
 }
 
-/* Save button */
 .button.save {
   align-self: flex-end;
   height: auto;
@@ -507,5 +502,153 @@ body {
 }
 #pomodoroBox.longBreakMode .button.save {
   background: var(--redFire);
+  color: var(--lightRed);
+}
+
+/** ── Tasks ───────────────────────────────────────────────────────────────── */
+#taskSection {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Separator line between progress bar and tasks */
+#taskDivider {
+  width: 100%;
+  height: 1px;
+  background: rgba(132, 220, 198, 0.15);
+  margin: 20px 0;
+}
+
+/* Input row: text field + add button side by side */
+#taskInputRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#taskInput {
+  flex: 1; /* takes all available width */
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: rgba(132, 220, 198, 0.08);
+  transition: background 0.2s ease;
+}
+
+#taskInput:focus {
+  background: rgba(132, 220, 198, 0.16);
+}
+
+#taskInput::placeholder {
+  opacity: 0.4;
+}
+
+/* Add button */
+.button.add-task {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  margin: 0;
+  border-radius: 10px;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Task list */
+#taskList {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#taskList li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(132, 220, 198, 0.05);
+  transition: background 0.2s ease;
+}
+
+#taskList li span {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Strike-through for completed tasks */
+#taskList li.task-completed span {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+
+#taskList input[type="checkbox"] {
+  accent-color: var(--mintLeaf);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.task-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  opacity: 0.35;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.task-delete:hover {
+  opacity: 0.8;
+}
+
+/* Per-mode colors for task inputs and add button */
+#pomodoroBox.workMode #taskInput {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.add-task {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+
+#pomodoroBox.shortBreakMode #taskInput {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.08);
+}
+#pomodoroBox.shortBreakMode .button.add-task {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+
+#pomodoroBox.longBreakMode #taskInput {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.add-task {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+
+#pomodoroBox.workMode #taskList li {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode #taskList li {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.longBreakMode #taskList li {
   color: var(--lightRed);
 }
