@@ -6,7 +6,7 @@ const MODES = {
     duration: 1500, // 25 min
     label: "Pomodoro",
     cssClass: "workMode",
-    message: "Time to focus", // shown when entering this mode
+    message: "Time to focus",
   },
   shortBreak: {
     duration: 300, // 5 min
@@ -33,6 +33,7 @@ let completedCycles = 0; // full work+break cycles (drives the progress bar)
 let currentMode = "work";
 let timerInterval = null;
 let settingsOpen = false; // tracks whether the settings panel is visible
+let previousDigits = "0000"; // last rendered digits, used to detect changes
 
 //* ── Task state ─────────────────────────────────────────────────────────────
 /* Each task: { id: number, text: string, completed: boolean } */
@@ -67,19 +68,58 @@ pomodoroBox.appendChild(progressBar);
 /* Pads a number to two digits: 5 → "05" */
 const pad = (n) => String(n).padStart(2, "0");
 
-/* Writes all four digit slots from the current timeLeft */
+/* Triggers the flip animation on a single digit element */
+function flipDigit(digitEl, newValue) {
+  const staticCard = digitEl.querySelector(".static");
+  const flipCard = digitEl.querySelector(".flip-card");
+
+  const staticTop = staticCard.querySelector(".top span");
+  const staticBottom = staticCard.querySelector(".bottom span");
+  const flipTop = flipCard.querySelector(".top span");
+  const flipBottom = flipCard.querySelector(".bottom span");
+
+  // Prepare flip card top with the outgoing value before animating
+  flipTop.textContent = staticTop.textContent;
+  flipBottom.textContent = staticTop.textContent; // bottom not visible during flipTop
+
+  // Update static card immediately — it sits underneath the entire animation
+  staticTop.textContent = newValue;
+  staticBottom.textContent = newValue;
+
+  // Remove and re-add the class to restart the animation if already running
+  flipCard.classList.remove("flipping");
+  void flipCard.offsetWidth; // forces the browser to re-render before re-adding
+
+  flipCard.classList.add("flipping");
+
+  // Once the animation ends, update the static card and clean up
+  flipCard.addEventListener(
+    "animationend",
+    (e) => {
+      if (e.animationName !== "flipBottom") return; // wait for the last animation
+      staticTop.textContent = newValue;
+      staticBottom.textContent = newValue;
+      flipCard.classList.remove("flipping");
+    },
+    { once: false },
+  ); // { once: true } removes the listener automatically after firing
+}
+
+/* Updates the display — animates only the digits that changed */
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const digits = pad(minutes) + pad(seconds);
 
-  const tops = document.querySelectorAll(".top span");
-  const bottoms = document.querySelectorAll(".bottom span");
+  const digitEls = document.querySelectorAll(".digit");
 
   digits.split("").forEach((d, i) => {
-    tops[i].textContent = d;
-    bottoms[i].textContent = d;
+    if (d !== previousDigits[i]) {
+      flipDigit(digitEls[i], d);
+    }
   });
+
+  previousDigits = digits; // store for next comparison
 }
 
 /* Shows a message below the timer for a few seconds, then fades out */
@@ -87,7 +127,7 @@ const TOAST_DURATION_MS = 3000;
 let toastTimeout = null;
 
 function showToast(message) {
-  clearTimeout(toastTimeout); // cancel any in-progress toast
+  clearTimeout(toastTimeout);
   toast.textContent = message;
   toast.classList.remove("toast-hide");
   toast.classList.add("toast-show");
@@ -132,6 +172,8 @@ function applyMode(modeName) {
   );
   pomodoroBox.classList.add(mode.cssClass);
 
+  // Reset previousDigits so all four digits animate on the first tick
+  previousDigits = "----";
   updateDisplay();
 }
 
@@ -160,7 +202,6 @@ function startTimer() {
   running = true;
   updatePlayPauseBtn();
 
-  // Show the message only on the very first start, not on resume after pause
   if (timeLeft === MODES[currentMode].duration) {
     showToast(MODES[currentMode].message);
   }
@@ -177,7 +218,7 @@ function startTimer() {
       const incoming = nextMode();
       showToast(MODES[incoming].message);
       applyMode(incoming);
-      startTimer(); // auto-start the next session
+      startTimer();
     }
   }, 1000);
 }
@@ -242,8 +283,8 @@ function saveSettings() {
     8,
   );
 
-  toggleSettings(); // close the panel
-  resetTimer(); // apply changes by restarting from scratch
+  toggleSettings();
+  resetTimer();
 }
 
 //* ── Tasks ──────────────────────────────────────────────────────────────────
@@ -261,7 +302,7 @@ function saveTasks() {
 
 /* Rebuilds the task list in the DOM from the tasks array */
 function renderTasks() {
-  taskList.innerHTML = ""; // clear current list before redrawing
+  taskList.innerHTML = "";
 
   tasks.forEach((task) => {
     const li = document.createElement("li");
@@ -277,7 +318,6 @@ function renderTasks() {
 
     if (task.completed) li.classList.add("task-completed");
 
-    // Each button knows which task to act on via its id
     checkbox.onclick = () => checkTask(task.id);
     delBtn.onclick = () => deleteTask(task.id);
 
@@ -291,15 +331,15 @@ function renderTasks() {
 /* Adds a new task from the input field */
 function addTask() {
   const text = taskInput.value.trim();
-  if (!text) return; // ignore empty input
+  if (!text) return;
 
   tasks.push({
-    id: Date.now(), // unique id based on timestamp
+    id: Date.now(),
     text: text,
     completed: false,
   });
 
-  taskInput.value = ""; // clear the input after adding
+  taskInput.value = "";
   saveTasks();
   renderTasks();
 }
@@ -336,7 +376,6 @@ settingsBtn.onclick = toggleSettings;
 document.getElementById("saveSettings").onclick = saveSettings;
 document.getElementById("addTaskBtn").onclick = addTask;
 
-// Allow submitting a task by pressing Enter in the input field
 taskInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") addTask();
 });

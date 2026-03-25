@@ -160,12 +160,6 @@ body {
   z-index: 5;
 }
 
-.card {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
 /* Shared half styles */
 .top,
 .bottom {
@@ -211,18 +205,8 @@ body {
   transform: translateY(-25%);
 }
 
-/* Flip animation */
-.flip {
-  animation: flipDown 0.6s ease forwards;
-}
-
-@keyframes flipDown {
-  from {
-    transform: rotateX(0deg);
-  }
-  to {
-    transform: rotateX(-90deg);
-  }
+to {
+  transform: rotateX(-90deg);
 }
 
 /** ── Toast message ───────────────────────────────────────────────────────── */
@@ -391,6 +375,46 @@ body {
   background: var(--lightRed);
 }
 
+/** ── Flip animation ──────────────────────────────────────────────────────── */
+
+/* Both cards occupy the exact same space inside .digit */
+.card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Static card: always visible underneath, shows the current number */
+.card.static {
+  z-index: 1;
+}
+
+/* Flip card: hidden by default, only its halves appear during animation */
+.card.flip-card {
+  z-index: 2;
+}
+
+/* Hide both halves by default — only visible during animation */
+.card.flip-card .top,
+.card.flip-card .bottom {
+  opacity: 0;
+}
+
+/* Only the top half animates — folds down and disappears */
+.card.flip-card.flipping .top {
+  opacity: 1;
+  animation: flipTop 0.25s ease-in forwards;
+}
+
+@keyframes flipTop {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
+}
+
 /** ── Settings button ─────────────────────────────────────────────────────── */
 .button.settings {
   height: 75px;
@@ -485,6 +509,8 @@ body {
   height: auto;
   padding: 10px 28px;
   border-radius: 12px;
+  box-shadow: none;
+  margin: 4px 0 0 0;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -511,7 +537,6 @@ body {
   margin-top: 8px;
 }
 
-/* Separator line between progress bar and tasks */
 #taskDivider {
   width: 100%;
   height: 1px;
@@ -519,7 +544,6 @@ body {
   margin: 20px 0;
 }
 
-/* Input row: text field + add button side by side */
 #taskInputRow {
   display: flex;
   gap: 10px;
@@ -527,7 +551,7 @@ body {
 }
 
 #taskInput {
-  flex: 1; /* takes all available width */
+  flex: 1;
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 500;
@@ -542,12 +566,10 @@ body {
 #taskInput:focus {
   background: rgba(132, 220, 198, 0.16);
 }
-
 #taskInput::placeholder {
   opacity: 0.4;
 }
 
-/* Add button */
 .button.add-task {
   width: 42px;
   height: 42px;
@@ -560,7 +582,6 @@ body {
   justify-content: center;
 }
 
-/* Task list */
 #taskList {
   list-style: none;
   padding: 0;
@@ -577,7 +598,6 @@ body {
   padding: 10px 12px;
   border-radius: 10px;
   background: rgba(132, 220, 198, 0.05);
-  transition: background 0.2s ease;
 }
 
 #taskList li span {
@@ -586,7 +606,6 @@ body {
   font-weight: 500;
 }
 
-/* Strike-through for completed tasks */
 #taskList li.task-completed span {
   text-decoration: line-through;
   opacity: 0.45;
@@ -617,7 +636,6 @@ body {
   opacity: 0.8;
 }
 
-/* Per-mode colors for task inputs and add button */
 #pomodoroBox.workMode #taskInput {
   color: var(--pearlAqua);
 }
@@ -625,7 +643,6 @@ body {
   background: var(--darkTeal);
   color: var(--pearlAqua);
 }
-
 #pomodoroBox.shortBreakMode #taskInput {
   color: var(--midnightBlue);
   background: rgba(0, 0, 0, 0.08);
@@ -634,7 +651,6 @@ body {
   background: var(--lightOrange);
   color: var(--midnightBlue);
 }
-
 #pomodoroBox.longBreakMode #taskInput {
   color: var(--lightRed);
 }
@@ -642,7 +658,6 @@ body {
   background: var(--redFire);
   color: var(--lightRed);
 }
-
 #pomodoroBox.workMode #taskList li {
   color: var(--pearlAqua);
 }
@@ -651,4 +666,31 @@ body {
 }
 #pomodoroBox.longBreakMode #taskList li {
   color: var(--lightRed);
+}
+
+/** ── Progress bar ────────────────────────────────────────────────────────── */
+#progressBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 20px;
+  background: rgba(132, 220, 198, 0.12);
+  overflow: hidden;
+}
+
+#progressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+#pomodoroBox.workMode #progressFill {
+  background: var(--pearlAqua);
+}
+#pomodoroBox.shortBreakMode #progressFill {
+  background: var(--midnightBlue);
+}
+#pomodoroBox.longBreakMode #progressFill {
+  background: var(--lightRed);
 }
