@@ -47,21 +47,12 @@ const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const taskInput = document.getElementById("taskInput");
 const taskList = document.getElementById("taskList");
-const modeTitle = document.createElement("p");
-const toast = document.createElement("div");
-const progressBar = document.createElement("div");
-const progressFill = document.createElement("div");
+const modeTitle = document.getElementById("modeTitle");
+const toast = document.getElementById("toast");
+const progressFill = document.getElementById("progressFill");
 const alarmSound = new Audio("./sounds/alarm.mp3");
 
 alarmSound.volume = 0.7;
-toast.id = "toast";
-progressBar.id = "progressBar";
-progressFill.id = "progressFill";
-
-progressBar.appendChild(progressFill);
-pomodoroBox.appendChild(modeTitle);
-pomodoroBox.appendChild(toast);
-pomodoroBox.appendChild(progressBar);
 
 //* ── Display ───────────────────────────────────────────────────────────────
 
@@ -92,17 +83,14 @@ function flipDigit(digitEl, newValue) {
 
   flipCard.classList.add("flipping");
 
-  // Once the animation ends, update the static card and clean up
+  // Remove flipping class once the animation ends
   flipCard.addEventListener(
     "animationend",
-    (e) => {
-      if (e.animationName !== "flipBottom") return; // wait for the last animation
-      staticTop.textContent = newValue;
-      staticBottom.textContent = newValue;
+    () => {
       flipCard.classList.remove("flipping");
     },
-    { once: false },
-  ); // { once: true } removes the listener automatically after firing
+    { once: true },
+  );
 }
 
 /* Updates the display — animates only the digits that changed */

@@ -14,6 +14,12 @@
   </head>
   <body>
     <div id="pomodoroBox">
+      <!--* ── Mode title (order: -1 in CSS pushes it above the timer) ── -->
+      <p id="modeTitle">Pomodoro</p>
+
+      <!--* ── Toast message ── -->
+      <div id="toast"></div>
+
       <!--* ── Timer ── -->
       <div id="timer">
         <div class="digit">
@@ -63,6 +69,11 @@
             <div class="bottom"><span>0</span></div>
           </div>
         </div>
+      </div>
+
+      <!--* ── Progress bar ── -->
+      <div id="progressBar">
+        <div id="progressFill"></div>
       </div>
 
       <!--* ── Buttons ── -->

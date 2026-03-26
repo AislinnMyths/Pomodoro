@@ -54,6 +54,7 @@ body {
 }
 
 /** ── Mode title ──────────────────────────────────────────────────────────── */
+/* order: -1 pushes the title above the timer in the flex column */
 #pomodoroBox > p {
   order: -1;
   margin: 0 0 25px 0;
@@ -81,12 +82,14 @@ body {
   border-radius: 30%;
   margin: 20px;
   font-weight: 600;
+  /* neumorphic shadow: dark bottom-right + faint light top-left */
   box-shadow:
     6px 6px 16px rgba(0, 0, 0, 0.5),
     -6px -6px 16px rgba(132, 220, 198, 0.06);
   transition: all 0.2s ease;
 }
 
+/* Simulate button press by inverting shadows inward */
 .button:active {
   box-shadow:
     inset 5px 5px 12px rgba(0, 0, 0, 0.6),
@@ -94,7 +97,7 @@ body {
   transform: scale(0.97);
 }
 
-/* Play button */
+/* Circular play button */
 .button.play {
   width: 75px;
   height: 75px;
@@ -110,7 +113,7 @@ body {
   transform: translateX(3px) translateY(-3px);
 }
 
-/* Reset button */
+/* Rectangular reset button */
 .button.reset {
   height: 75px;
   padding: 0 30px;
@@ -128,20 +131,13 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
-  perspective: 1000px;
-}
-
-/* Glow when running */
-.timerRunning {
-  text-shadow:
-    0 0 15px rgba(9, 188, 138, 0.7),
-    0 0 30px rgba(9, 188, 138, 0.4);
+  perspective: 1000px; /* enables 3D depth for flip animation */
 }
 
 .digit {
   width: 70px;
   height: 100px;
-  position: relative;
+  position: relative; /* establishes positioning context for .card children */
   font-size: 4rem;
   font-weight: 700;
   font-family: "JetBrains Mono", monospace;
@@ -149,7 +145,7 @@ body {
   line-height: 100px;
 }
 
-/* Dividing line between top/bottom halves */
+/* Horizontal dividing line between top and bottom halves */
 .digit::after {
   content: "";
   position: absolute;
@@ -160,7 +156,14 @@ body {
   z-index: 5;
 }
 
-/* Shared half styles */
+/* Both cards stack in the same space — position: relative on .digit is the anchor */
+.card {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* Shared styles for top and bottom halves of every card */
 .top,
 .bottom {
   position: absolute;
@@ -169,7 +172,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: hidden; /* clips digit text that extends beyond the half */
 }
 
 .top {
@@ -177,7 +180,7 @@ body {
   color: var(--pearlAqua);
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
-  transform-origin: bottom;
+  transform-origin: bottom; /* pivot point for flip rotation */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -191,7 +194,7 @@ body {
   box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Center digit text within each half */
+/* Offset span vertically so the full digit is visible within each half */
 .top span,
 .bottom span {
   display: block;
@@ -205,8 +208,37 @@ body {
   transform: translateY(-25%);
 }
 
-to {
-  transform: rotateX(-90deg);
+/** ── Flip animation ──────────────────────────────────────────────────────── */
+
+/* Static card: always visible underneath, shows the current number */
+.card.static {
+  z-index: 1;
+}
+
+/* Flip card: sits on top but stays invisible unless animating */
+.card.flip-card {
+  z-index: 2;
+}
+
+/* Both halves hidden by default — only appear during the flip */
+.card.flip-card .top,
+.card.flip-card .bottom {
+  opacity: 0;
+}
+
+/* Top half folds down showing the outgoing number */
+.card.flip-card.flipping .top {
+  opacity: 1;
+  animation: flipTop 0.25s ease-in forwards;
+}
+
+@keyframes flipTop {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(-90deg);
+  }
 }
 
 /** ── Toast message ───────────────────────────────────────────────────────── */
@@ -218,7 +250,7 @@ to {
   opacity: 0;
   margin-top: 12px;
   transition: opacity 0.5s ease;
-  pointer-events: none; /* never blocks clicks */
+  pointer-events: none; /* never blocks clicks when invisible */
   min-height: 1.2em; /* reserves space so layout doesn't shift */
 }
 
@@ -229,14 +261,28 @@ to {
   opacity: 0;
 }
 
+/** ── Progress bar ────────────────────────────────────────────────────────── */
+#progressBar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  margin-top: 20px;
+  background: rgba(132, 220, 198, 0.12);
+  overflow: hidden;
+}
+
+#progressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
 /** ── Mode themes ─────────────────────────────────────────────────────────── */
 /*
-  Each mode overrides:
-    • box background + text color
-    • digit card colors
-    • button colors
-    • pause-state gradient
-    • toast color
+  Each mode block overrides colors for:
+    box · title · digit halves · buttons · toast · progress fill · inputs · tasks
+  JS only swaps the CSS class — all visual changes cascade from here.
 */
 
 /* -- Work -- */
@@ -263,7 +309,31 @@ to {
   background: var(--midnightBlue);
   color: var(--pearlAqua);
 }
+#pomodoroBox.workMode .button.settings {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.save {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.add-task {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
 #pomodoroBox.workMode #toast {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #progressFill {
+  background: var(--pearlAqua);
+}
+#pomodoroBox.workMode .settings-row input {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #taskInput {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #taskList li {
   color: var(--pearlAqua);
 }
 #pomodoroBox.workMode .button.play.pauseColor {
@@ -299,7 +369,33 @@ to {
   background: var(--Orange);
   color: var(--midnightBlue);
 }
+#pomodoroBox.shortBreakMode .button.settings {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.save {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.add-task {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
 #pomodoroBox.shortBreakMode #toast {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode #progressFill {
+  background: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .settings-row input {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.1);
+}
+#pomodoroBox.shortBreakMode #taskInput {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.08);
+}
+#pomodoroBox.shortBreakMode #taskList li {
   color: var(--midnightBlue);
 }
 #pomodoroBox.shortBreakMode .button.play.pauseColor {
@@ -335,7 +431,31 @@ to {
   background: var(--darkRed);
   color: var(--lightRed);
 }
+#pomodoroBox.longBreakMode .button.settings {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.save {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.add-task {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
 #pomodoroBox.longBreakMode #toast {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #progressFill {
+  background: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .settings-row input {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #taskInput {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #taskList li {
   color: var(--lightRed);
 }
 #pomodoroBox.longBreakMode .button.play.pauseColor {
@@ -347,78 +467,10 @@ to {
   );
 }
 
-/** ── Progress bar ────────────────────────────────────────────────────────── */
-#progressBar {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  margin-top: 20px;
-  background: rgba(132, 220, 198, 0.12);
-  overflow: hidden;
-}
-
-#progressFill {
-  height: 100%;
-  width: 0%;
-  border-radius: 3px;
-  transition: width 0.6s ease;
-}
-
-/* Fill color adapts to the current mode */
-#pomodoroBox.workMode #progressFill {
-  background: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode #progressFill {
-  background: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode #progressFill {
-  background: var(--lightRed);
-}
-
-/** ── Flip animation ──────────────────────────────────────────────────────── */
-
-/* Both cards occupy the exact same space inside .digit */
-.card {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-
-/* Static card: always visible underneath, shows the current number */
-.card.static {
-  z-index: 1;
-}
-
-/* Flip card: hidden by default, only its halves appear during animation */
-.card.flip-card {
-  z-index: 2;
-}
-
-/* Hide both halves by default — only visible during animation */
-.card.flip-card .top,
-.card.flip-card .bottom {
-  opacity: 0;
-}
-
-/* Only the top half animates — folds down and disappears */
-.card.flip-card.flipping .top {
-  opacity: 1;
-  animation: flipTop 0.25s ease-in forwards;
-}
-
-@keyframes flipTop {
-  from {
-    transform: rotateX(0deg);
-  }
-  to {
-    transform: rotateX(-90deg);
-  }
-}
-
 /** ── Settings button ─────────────────────────────────────────────────────── */
 .button.settings {
-  height: 75px;
   width: 75px;
+  height: 75px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -426,27 +478,15 @@ to {
   font-size: 1.4rem;
 }
 
-#pomodoroBox.workMode .button.settings {
-  background: var(--midnightBlue);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode .button.settings {
-  background: var(--Orange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode .button.settings {
-  background: var(--darkRed);
-  color: var(--lightRed);
-}
-
 /** ── Settings panel ─────────────────────────────────────────────────────── */
+/* Collapsed by default — expands via .settings-open class toggled by JS */
 #settingsPanel {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
   overflow: hidden;
-  max-height: 0;
+  max-height: 0; /* collapsed */
   opacity: 0;
   transition:
     max-height 0.4s ease,
@@ -493,42 +533,30 @@ to {
   background: rgba(132, 220, 198, 0.18);
 }
 
-#pomodoroBox.workMode .settings-row input {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode .settings-row input {
-  color: var(--midnightBlue);
-  background: rgba(0, 0, 0, 0.1);
-}
-#pomodoroBox.longBreakMode .settings-row input {
-  color: var(--lightRed);
-}
-
+/* Save button — uses opacity instead of neumorphic shadow to avoid corner bleed */
 .button.save {
   align-self: flex-end;
   height: auto;
   padding: 10px 28px;
   border-radius: 12px;
-  box-shadow: none;
   margin: 4px 0 0 0;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin: 4px 0 0 0;
+  box-shadow: none !important; /* neumorphic shadow bleeds at small border-radius */
+  opacity: 0.85;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-#pomodoroBox.workMode .button.save {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
+.button.save:hover {
+  opacity: 1;
 }
-#pomodoroBox.shortBreakMode .button.save {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode .button.save {
-  background: var(--redFire);
-  color: var(--lightRed);
+.button.save:active {
+  opacity: 0.7;
+  transform: scale(0.97);
 }
 
 /** ── Tasks ───────────────────────────────────────────────────────────────── */
@@ -537,6 +565,7 @@ to {
   margin-top: 8px;
 }
 
+/* Visual separator between progress bar and task list */
 #taskDivider {
   width: 100%;
   height: 1px;
@@ -551,7 +580,7 @@ to {
 }
 
 #taskInput {
-  flex: 1;
+  flex: 1; /* takes all available width next to the add button */
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 500;
@@ -570,6 +599,7 @@ to {
   opacity: 0.4;
 }
 
+/* Small square add button next to the input */
 .button.add-task {
   width: 42px;
   height: 42px;
@@ -606,6 +636,7 @@ to {
   font-weight: 500;
 }
 
+/* Strike-through style for completed tasks */
 #taskList li.task-completed span {
   text-decoration: line-through;
   opacity: 0.45;
@@ -634,63 +665,4 @@ to {
 
 .task-delete:hover {
   opacity: 0.8;
-}
-
-#pomodoroBox.workMode #taskInput {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.add-task {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode #taskInput {
-  color: var(--midnightBlue);
-  background: rgba(0, 0, 0, 0.08);
-}
-#pomodoroBox.shortBreakMode .button.add-task {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode #taskInput {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.add-task {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-#pomodoroBox.workMode #taskList li {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode #taskList li {
-  color: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode #taskList li {
-  color: var(--lightRed);
-}
-
-/** ── Progress bar ────────────────────────────────────────────────────────── */
-#progressBar {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  margin-top: 20px;
-  background: rgba(132, 220, 198, 0.12);
-  overflow: hidden;
-}
-
-#progressFill {
-  height: 100%;
-  width: 0%;
-  border-radius: 3px;
-  transition: width 0.6s ease;
-}
-
-#pomodoroBox.workMode #progressFill {
-  background: var(--pearlAqua);
-}
-#pomodoroBox.shortBreakMode #progressFill {
-  background: var(--midnightBlue);
-}
-#pomodoroBox.longBreakMode #progressFill {
-  background: var(--lightRed);
 }
