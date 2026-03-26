@@ -23,12 +23,10 @@
       <!--* ── Timer ── -->
       <div id="timer">
         <div class="digit">
-          <!-- static card: always visible, shows the current number -->
           <div class="card static">
             <div class="top"><span>0</span></div>
             <div class="bottom"><span>0</span></div>
           </div>
-          <!-- flip card: animates on change, top shows current, bottom shows next -->
           <div class="card flip-card">
             <div class="top"><span>0</span></div>
             <div class="bottom"><span>0</span></div>
@@ -76,6 +74,12 @@
         <div id="progressFill"></div>
       </div>
 
+      <!--* ── Counters: current round cycles + total completed rounds ── -->
+      <div id="counters">
+        <span id="cycleCount">0 / 4</span>
+        <span id="roundCount">Completed rounds: 0</span>
+      </div>
+
       <!--* ── Buttons ── -->
       <div id="buttonBox">
         <button id="playPause" class="button play">
@@ -104,6 +108,19 @@
           <input id="inputPomodoros" type="number" min="1" max="8" />
         </div>
         <button id="saveSettings" class="button save">Save</button>
+      </div>
+
+      <!--* ── End-of-round modal ── -->
+      <div id="modalOverlay">
+        <div id="modal">
+          <p id="modalMessage">Round complete! Ready for another one?</p>
+          <div id="modalButtons">
+            <button id="modalContinue" class="button modal-btn">
+              Continue
+            </button>
+            <button id="modalStop" class="button modal-btn">Stop</button>
+          </div>
+        </div>
       </div>
 
       <!--* ── Tasks ── -->

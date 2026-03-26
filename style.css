@@ -37,6 +37,7 @@ body {
 
 /** ── Pomodoro box ────────────────────────────────────────────────────────── */
 #pomodoroBox {
+  position: relative; /* anchor for the modal overlay */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -249,6 +250,7 @@ body {
   text-transform: uppercase;
   opacity: 0;
   margin-top: 12px;
+  margin-bottom: 16px;
   transition: opacity 0.5s ease;
   pointer-events: none; /* never blocks clicks when invisible */
   min-height: 1.2em; /* reserves space so layout doesn't shift */
@@ -276,6 +278,25 @@ body {
   width: 0%;
   border-radius: 3px;
   transition: width 0.6s ease;
+}
+
+/** ── Counters ────────────────────────────────────────────────────────────── */
+
+/* Two counters sit side by side below the bar */
+#counters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
+#counters span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.6;
+  white-space: nowrap;
 }
 
 /** ── Mode themes ─────────────────────────────────────────────────────────── */
@@ -322,6 +343,9 @@ body {
   color: var(--pearlAqua);
 }
 #pomodoroBox.workMode #toast {
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #counters span {
   color: var(--pearlAqua);
 }
 #pomodoroBox.workMode #progressFill {
@@ -384,6 +408,9 @@ body {
 #pomodoroBox.shortBreakMode #toast {
   color: var(--midnightBlue);
 }
+#pomodoroBox.shortBreakMode #counters span {
+  color: var(--midnightBlue);
+}
 #pomodoroBox.shortBreakMode #progressFill {
   background: var(--midnightBlue);
 }
@@ -444,6 +471,9 @@ body {
   color: var(--lightRed);
 }
 #pomodoroBox.longBreakMode #toast {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #counters span {
   color: var(--lightRed);
 }
 #pomodoroBox.longBreakMode #progressFill {
@@ -665,4 +695,84 @@ body {
 
 .task-delete:hover {
   opacity: 0.8;
+}
+
+/** ── End-of-round modal ──────────────────────────────────────────────────── */
+
+/* Full overlay covering pomodoroBox — hidden by default */
+#modalOverlay {
+  display: none;
+  position: absolute;
+  inset: 0; /* covers the entire pomodoroBox */
+  border-radius: 40px; /* matches pomodoroBox */
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+#modalOverlay.modal-visible {
+  display: flex;
+}
+
+#modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 40px 48px;
+  border-radius: 24px;
+  background: var(--midnightBlue);
+  box-shadow:
+    12px 12px 30px rgba(0, 0, 0, 0.5),
+    -12px -12px 30px rgba(132, 220, 198, 0.04);
+}
+
+#modalMessage {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--pearlAqua);
+  letter-spacing: 0.04em;
+}
+
+#modalButtons {
+  display: flex;
+  gap: 16px;
+}
+
+/* Modal buttons share .button base but with adjusted sizing */
+.button.modal-btn {
+  height: auto;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: none !important;
+  margin: 0;
+  opacity: 0.85;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.button.modal-btn:hover {
+  opacity: 1;
+}
+.button.modal-btn:active {
+  opacity: 0.7;
+  transform: scale(0.97);
+}
+
+#modalContinue {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#modalStop {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
 }
