@@ -3,19 +3,19 @@
    To add or tweak a mode, only edit this object. */
 const MODES = {
   work: {
-    duration: 8, //1500 25 min
+    duration: 1500, // 25 min
     label: "Pomodoro",
     cssClass: "workMode",
     message: "Time to focus",
   },
   shortBreak: {
-    duration: 3, //300 5 min
+    duration: 300, // 5 min
     label: "Short break",
     cssClass: "shortBreakMode",
     message: "Time for rest",
   },
   longBreak: {
-    duration: 6, //900 15 min
+    duration: 900, // 15 min
     label: "Long break",
     cssClass: "longBreakMode",
     message: "Time for rest",
@@ -29,12 +29,12 @@ let POMODOROS_BEFORE_LONG_BREAK = 4;
 let timeLeft = MODES.work.duration;
 let running = false;
 let pomodoroCount = 0; // work blocks in the current round (resets each round)
-let completedCycles = 0; // work+break cycles within the current round
-let completedRounds = 0; // full rounds (work+breaks+longBreak) since last reset
+let completedCycles = 0; // work+shortBreak cycles within the current round
+let completedRounds = 0; // full rounds (cycles + longBreak) since last reset
 let currentMode = "work";
 let timerInterval = null;
 let settingsOpen = false; // tracks whether the settings panel is visible
-let previousDigits = "0000"; // last rendered digits, used to detect changes
+let previousDigits = "0000"; // last rendered digits, used to detect changes for flip
 
 //* ── Task state ─────────────────────────────────────────────────────────────
 /* Each task: { id: number, text: string, completed: boolean } */
@@ -81,12 +81,11 @@ function flipDigit(digitEl, newValue) {
   staticTop.textContent = newValue;
   staticBottom.textContent = newValue;
 
-  // Remove and re-add the class to restart the animation if already running
+  // Remove and re-add flipping to restart the animation if already running
   flipCard.classList.remove("flipping");
-  void flipCard.offsetWidth; // forces the browser to re-render before re-adding
+  void flipCard.offsetWidth; // forces browser re-render before re-adding
   flipCard.classList.add("flipping");
 
-  // Remove flipping class once the animation ends
   flipCard.addEventListener(
     "animationend",
     () => {
@@ -96,24 +95,21 @@ function flipDigit(digitEl, newValue) {
   );
 }
 
-/* Updates the timer display and the browser tab title */
+/* Updates the timer display, tab title, and animates changed digits */
 function updateDisplay() {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const digits = pad(minutes) + pad(seconds);
 
-  const digitEls = document.querySelectorAll(".digit");
-  digits.split("").forEach((d, i) => {
-    if (d !== previousDigits[i]) flipDigit(digitEls[i], d);
+  document.querySelectorAll(".digit").forEach((el, i) => {
+    if (digits[i] !== previousDigits[i]) flipDigit(el, digits[i]);
   });
 
   previousDigits = digits;
-
-  // Keep the tab title in sync with the timer
   document.title = `${pad(minutes)}:${pad(seconds)} — ${MODES[currentMode].label}`;
 }
 
-/* Resets the tab title to the default when the timer is not running */
+/* Resets the tab title to the app name when the timer is not running */
 function resetTitle() {
   document.title = "Pomodoro";
 }
@@ -123,7 +119,7 @@ const TOAST_DURATION_MS = 3000;
 let toastTimeout = null;
 
 function showToast(message) {
-  clearTimeout(toastTimeout);
+  clearTimeout(toastTimeout); // cancel any in-progress toast first
   toast.textContent = message;
   toast.classList.remove("toast-hide");
   toast.classList.add("toast-show");
@@ -157,7 +153,7 @@ function updatePlayPauseBtn() {
 
 //* ── Notifications ──────────────────────────────────────────────────────────
 
-/* Requests notification permission on first interaction if not already granted */
+/* Requests notification permission on first user interaction */
 function requestNotificationPermission() {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -173,19 +169,17 @@ function sendNotification(title, body) {
 
 //* ── Modal ──────────────────────────────────────────────────────────────────
 
-/* Shows the end-of-round modal */
 function showModal() {
   modalOverlay.classList.add("modal-visible");
 }
 
-/* Hides the modal */
 function hideModal() {
   modalOverlay.classList.remove("modal-visible");
 }
 
 //* ── Mode management ───────────────────────────────────────────────────────
 
-/* Applies a mode: updates state, DOM classes, title, and the countdown */
+/* Applies a mode: updates state, CSS class, title text, and the countdown */
 function applyMode(modeName) {
   const mode = MODES[modeName];
   currentMode = modeName;
@@ -198,30 +192,29 @@ function applyMode(modeName) {
   );
   pomodoroBox.classList.add(mode.cssClass);
 
-  // Reset previousDigits so all four digits animate on the first tick
+  // "----" ensures all four digits animate on the very first tick
   previousDigits = "----";
   updateDisplay();
 }
 
-/* Returns the next mode name and updates all counters */
+/* Returns the next mode name and updates all counters.
+   Returns null when a full round ends — timer must wait for user input. */
 function nextMode() {
-  // A short break just ended → one work+break cycle completed
   if (currentMode === "shortBreak") {
     completedCycles++;
     updateProgressBar();
     return "work";
   }
 
-  // A long break just ended → full round complete, show modal
   if (currentMode === "longBreak") {
     completedRounds++;
     completedCycles = 0; // reset bar for the next round
     updateProgressBar();
     showModal();
-    return null; // null signals that the timer should not auto-start
+    return null;
   }
 
-  // A work block just ended → decide which break comes next
+  // Work block ended — decide which break comes next
   pomodoroCount++;
   if (pomodoroCount >= POMODOROS_BEFORE_LONG_BREAK) {
     pomodoroCount = 0;
@@ -250,12 +243,12 @@ function startTimer() {
       clearInterval(timerInterval);
       running = false;
       updatePlayPauseBtn();
-
       playAlarm();
+
       const incoming = nextMode();
 
-      // null means end of round — wait for user to respond to modal
       if (incoming === null) {
+        // End of round — wait for user to respond to modal
         sendNotification("Round complete! 🎉", "Ready for another one?");
         resetTitle();
         return;
@@ -264,7 +257,7 @@ function startTimer() {
       sendNotification(MODES[incoming].label, MODES[incoming].message);
       showToast(MODES[incoming].message);
       applyMode(incoming);
-      startTimer(); // auto-start the next session
+      startTimer();
     }
   }, 1000);
 }
@@ -282,7 +275,7 @@ function toggleTimer() {
   running ? pauseTimer() : startTimer();
 }
 
-/* Stops the timer and returns to the initial work session */
+/* Stops the timer and returns everything to the initial state */
 function resetTimer() {
   clearInterval(timerInterval);
   running = false;
@@ -298,18 +291,10 @@ function resetTimer() {
 
 //* ── Settings ──────────────────────────────────────────────────────────────
 
-/* Default settings — used on first load if nothing is saved */
-const DEFAULT_SETTINGS = {
-  workDuration: MODES.work.duration,
-  shortBreakDuration: MODES.shortBreak.duration,
-  longBreakDuration: MODES.longBreak.duration,
-  pomodorosBeforeLongBreak: POMODOROS_BEFORE_LONG_BREAK,
-};
-
 /* Reads settings from localStorage and applies them to MODES */
 function loadSettings() {
   const saved = localStorage.getItem("settings");
-  if (!saved) return; // no saved settings — use defaults from MODES
+  if (!saved) return; // no saved settings — keep MODES defaults
 
   const s = JSON.parse(saved);
   MODES.work.duration = s.workDuration;
@@ -319,7 +304,7 @@ function loadSettings() {
 }
 
 /* Writes current settings to localStorage */
-function saveSettingsToStorage() {
+function persistSettings() {
   localStorage.setItem(
     "settings",
     JSON.stringify({
@@ -351,7 +336,7 @@ function toggleSettings() {
 /* Clamps a value between min and max to prevent invalid inputs */
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-/* Reads inputs, updates config, persists to localStorage, resets the timer */
+/* Reads inputs, updates config, persists, then resets the timer */
 function saveSettings() {
   MODES.work.duration =
     clamp(parseInt(document.getElementById("inputWork").value), 1, 60) * 60;
@@ -367,27 +352,27 @@ function saveSettings() {
     8,
   );
 
-  saveSettingsToStorage(); // persist before reset so new values survive reload
+  persistSettings(); // write before reset so new values survive reload
   toggleSettings();
   resetTimer();
 }
 
 //* ── Tasks ──────────────────────────────────────────────────────────────────
 
-/* Reads tasks from localStorage. Returns empty array if nothing is saved yet. */
+/* Reads tasks from localStorage. Returns an empty array if nothing is saved. */
 function loadTasks() {
   const saved = localStorage.getItem("tasks");
   return saved ? JSON.parse(saved) : [];
 }
 
 /* Writes the current tasks array to localStorage */
-function saveTasks() {
+function persistTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
 /* Rebuilds the task list in the DOM from the tasks array */
 function renderTasks() {
-  taskList.innerHTML = "";
+  taskList.innerHTML = ""; // clear before redrawing to avoid duplicates
 
   tasks.forEach((task) => {
     const li = document.createElement("li");
@@ -406,9 +391,7 @@ function renderTasks() {
     checkbox.onclick = () => checkTask(task.id);
     delBtn.onclick = () => deleteTask(task.id);
 
-    li.appendChild(checkbox);
-    li.appendChild(label);
-    li.appendChild(delBtn);
+    li.append(checkbox, label, delBtn);
     taskList.appendChild(li);
   });
 }
@@ -416,16 +399,11 @@ function renderTasks() {
 /* Adds a new task from the input field */
 function addTask() {
   const text = taskInput.value.trim();
-  if (!text) return;
+  if (!text) return; // ignore empty input
 
-  tasks.push({
-    id: Date.now(), // unique id based on timestamp
-    text: text,
-    completed: false,
-  });
-
+  tasks.push({ id: Date.now(), text, completed: false });
   taskInput.value = "";
-  saveTasks();
+  persistTasks();
   renderTasks();
 }
 
@@ -433,14 +411,14 @@ function addTask() {
 function checkTask(id) {
   const task = tasks.find((t) => t.id === id);
   if (task) task.completed = !task.completed;
-  saveTasks();
+  persistTasks();
   renderTasks();
 }
 
 /* Removes a task by id */
 function deleteTask(id) {
   tasks = tasks.filter((t) => t.id !== id);
-  saveTasks();
+  persistTasks();
   renderTasks();
 }
 

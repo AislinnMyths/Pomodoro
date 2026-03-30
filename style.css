@@ -56,7 +56,7 @@ body {
 
 /** ── Mode title ──────────────────────────────────────────────────────────── */
 /* order: -1 pushes the title above the timer in the flex column */
-#pomodoroBox > p {
+#modeTitle {
   order: -1;
   margin: 0 0 25px 0;
   font-size: 5vw;
@@ -114,8 +114,9 @@ body {
   transform: translateX(3px) translateY(-3px);
 }
 
-/* Rectangular reset button */
-.button.reset {
+/* Rectangular reset and settings buttons */
+.button.reset,
+.button.settings {
   height: 75px;
   padding: 0 30px;
   display: flex;
@@ -125,6 +126,52 @@ body {
   box-shadow:
     4px 4px 12px rgba(0, 0, 0, 0.5),
     -4px -4px 12px rgba(132, 220, 198, 0.04);
+}
+
+/* Square settings button overrides the padding from above */
+.button.settings {
+  width: 75px;
+  padding: 0;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/*
+  Small flat buttons (save, modal) — avoid neumorphic shadow bleed
+  at small border-radius by using opacity feedback instead.
+*/
+.button.save,
+.button.modal-btn {
+  height: auto;
+  padding: 10px 28px;
+  border-radius: 12px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: none !important; /* prevents shadow bleeding at corners */
+  opacity: 0.85;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.button.save:hover,
+.button.modal-btn:hover {
+  opacity: 1;
+}
+
+.button.save:active,
+.button.modal-btn:active {
+  opacity: 0.7;
+  transform: scale(0.97);
+}
+
+/* Save button aligns to the right inside the settings panel */
+.button.save {
+  align-self: flex-end;
+  margin-top: 4px;
 }
 
 /** ── Timer display ───────────────────────────────────────────────────────── */
@@ -282,7 +329,7 @@ body {
 
 /** ── Counters ────────────────────────────────────────────────────────────── */
 
-/* Two counters sit side by side below the bar */
+/* Two counters sit side by side below the progress bar */
 #counters {
   display: flex;
   justify-content: space-between;
@@ -296,220 +343,11 @@ body {
   font-weight: 700;
   letter-spacing: 0.05em;
   opacity: 0.6;
-  white-space: nowrap;
-}
-
-/** ── Mode themes ─────────────────────────────────────────────────────────── */
-/*
-  Each mode block overrides colors for:
-    box · title · digit halves · buttons · toast · progress fill · inputs · tasks
-  JS only swaps the CSS class — all visual changes cascade from here.
-*/
-
-/* -- Work -- */
-#pomodoroBox.workMode {
-  color: var(--pearlAqua);
-  background: var(--midnightBlue);
-}
-#pomodoroBox.workMode > p {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .top {
-  background: var(--midnightBlue);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .bottom {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.play {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.reset {
-  background: var(--midnightBlue);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.settings {
-  background: var(--midnightBlue);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.save {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.add-task {
-  background: var(--darkTeal);
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode #toast {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode #counters span {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode #progressFill {
-  background: var(--pearlAqua);
-}
-#pomodoroBox.workMode .settings-row input {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode #taskInput {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode #taskList li {
-  color: var(--pearlAqua);
-}
-#pomodoroBox.workMode .button.play.pauseColor {
-  color: var(--midnightBlue);
-  background: radial-gradient(
-    circle,
-    rgba(246, 232, 234, 1) 0%,
-    rgba(255, 78, 0, 1) 100%
-  );
-}
-
-/* -- Short break -- */
-#pomodoroBox.shortBreakMode {
-  color: var(--midnightBlue);
-  background: var(--Orange);
-}
-#pomodoroBox.shortBreakMode > p {
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .top {
-  background: var(--Orange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .bottom {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.play {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.reset {
-  background: var(--Orange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.settings {
-  background: var(--Orange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.save {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.add-task {
-  background: var(--lightOrange);
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode #toast {
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode #counters span {
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode #progressFill {
-  background: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .settings-row input {
-  color: var(--midnightBlue);
-  background: rgba(0, 0, 0, 0.1);
-}
-#pomodoroBox.shortBreakMode #taskInput {
-  color: var(--midnightBlue);
-  background: rgba(0, 0, 0, 0.08);
-}
-#pomodoroBox.shortBreakMode #taskList li {
-  color: var(--midnightBlue);
-}
-#pomodoroBox.shortBreakMode .button.play.pauseColor {
-  color: var(--midnightBlue);
-  background: radial-gradient(
-    circle,
-    rgba(9, 188, 138, 1) 0%,
-    rgba(0, 67, 70, 1) 100%
-  );
-}
-
-/* -- Long break -- */
-#pomodoroBox.longBreakMode {
-  color: var(--lightRed);
-  background: var(--darkRed);
-}
-#pomodoroBox.longBreakMode > p {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .top {
-  background: var(--darkRed);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .bottom {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.play {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.reset {
-  background: var(--darkRed);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.settings {
-  background: var(--darkRed);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.save {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.add-task {
-  background: var(--redFire);
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode #toast {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode #counters span {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode #progressFill {
-  background: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .settings-row input {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode #taskInput {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode #taskList li {
-  color: var(--lightRed);
-}
-#pomodoroBox.longBreakMode .button.play.pauseColor {
-  color: var(--midnightBlue);
-  background: radial-gradient(
-    circle,
-    rgba(9, 188, 138, 1) 0%,
-    rgba(0, 67, 70, 1) 83%
-  );
-}
-
-/** ── Settings button ─────────────────────────────────────────────────────── */
-.button.settings {
-  width: 75px;
-  height: 75px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
+  white-space: nowrap; /* never wraps to a second line */
 }
 
 /** ── Settings panel ─────────────────────────────────────────────────────── */
-/* Collapsed by default — expands via .settings-open class toggled by JS */
+/* Collapsed by default — expands via .settings-open toggled by JS */
 #settingsPanel {
   width: 100%;
   display: flex;
@@ -563,39 +401,13 @@ body {
   background: rgba(132, 220, 198, 0.18);
 }
 
-/* Save button — uses opacity instead of neumorphic shadow to avoid corner bleed */
-.button.save {
-  align-self: flex-end;
-  height: auto;
-  padding: 10px 28px;
-  border-radius: 12px;
-  margin: 4px 0 0 0;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  box-shadow: none !important; /* neumorphic shadow bleeds at small border-radius */
-  opacity: 0.85;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.button.save:hover {
-  opacity: 1;
-}
-.button.save:active {
-  opacity: 0.7;
-  transform: scale(0.97);
-}
-
 /** ── Tasks ───────────────────────────────────────────────────────────────── */
 #taskSection {
   width: 100%;
   margin-top: 8px;
 }
 
-/* Visual separator between progress bar and task list */
+/* Visual separator between counters and task list */
 #taskDivider {
   width: 100%;
   height: 1px;
@@ -704,7 +516,7 @@ body {
   display: none;
   position: absolute;
   inset: 0; /* covers the entire pomodoroBox */
-  border-radius: 40px; /* matches pomodoroBox */
+  border-radius: 40px; /* matches pomodoroBox border-radius */
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   justify-content: center;
@@ -743,31 +555,6 @@ body {
   gap: 16px;
 }
 
-/* Modal buttons share .button base but with adjusted sizing */
-.button.modal-btn {
-  height: auto;
-  padding: 12px 28px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  box-shadow: none !important;
-  margin: 0;
-  opacity: 0.85;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-.button.modal-btn:hover {
-  opacity: 1;
-}
-.button.modal-btn:active {
-  opacity: 0.7;
-  transform: scale(0.97);
-}
-
 #modalContinue {
   background: var(--darkTeal);
   color: var(--pearlAqua);
@@ -775,4 +562,184 @@ body {
 #modalStop {
   background: var(--midnightBlue);
   color: var(--pearlAqua);
+}
+
+/** ── Mode themes ─────────────────────────────────────────────────────────── */
+/*
+  Each mode block overrides colors for:
+    box · title · digit halves · buttons · toast · counters · progress · inputs · tasks
+  JS only swaps one CSS class on #pomodoroBox — all visual changes cascade from here.
+*/
+
+/* -- Work (default colors, only non-default overrides needed) -- */
+#pomodoroBox.workMode {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .top {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .bottom {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.play {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.reset {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.settings {
+  background: var(--midnightBlue);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.save {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.add-task {
+  background: var(--darkTeal);
+  color: var(--pearlAqua);
+}
+#pomodoroBox.workMode #progressFill {
+  background: var(--pearlAqua);
+}
+#pomodoroBox.workMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: radial-gradient(
+    circle,
+    rgba(246, 232, 234, 1) 0%,
+    rgba(255, 78, 0, 1) 100%
+  );
+}
+
+/* -- Short break -- */
+#pomodoroBox.shortBreakMode {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode #modeTitle {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .top {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .bottom {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.play {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.reset {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.settings {
+  background: var(--Orange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.save {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.add-task {
+  background: var(--lightOrange);
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode #toast {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode #counters span {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode #progressFill {
+  background: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .settings-row input {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.1);
+}
+#pomodoroBox.shortBreakMode #taskInput {
+  color: var(--midnightBlue);
+  background: rgba(0, 0, 0, 0.08);
+}
+#pomodoroBox.shortBreakMode #taskList li {
+  color: var(--midnightBlue);
+}
+#pomodoroBox.shortBreakMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: radial-gradient(
+    circle,
+    rgba(9, 188, 138, 1) 0%,
+    rgba(0, 67, 70, 1) 100%
+  );
+}
+
+/* -- Long break -- */
+#pomodoroBox.longBreakMode {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #modeTitle {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .top {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .bottom {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.play {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.reset {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.settings {
+  background: var(--darkRed);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.save {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.add-task {
+  background: var(--redFire);
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #toast {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #counters span {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #progressFill {
+  background: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .settings-row input {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #taskInput {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode #taskList li {
+  color: var(--lightRed);
+}
+#pomodoroBox.longBreakMode .button.play.pauseColor {
+  color: var(--midnightBlue);
+  background: radial-gradient(
+    circle,
+    rgba(9, 188, 138, 1) 0%,
+    rgba(0, 67, 70, 1) 83%
+  );
 }
