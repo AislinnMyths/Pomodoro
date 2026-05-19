@@ -17,8 +17,8 @@ A simple Pomodoro timer to help improve focus and productivity. I built this pro
 ## 🔮 Future Improvements
 - Add custom session lengths
 - Add task tracking or statistics
-- Barra de progreso animada
-- Contador de ciclos completados 
+- Animated progress bar
+- Counter for completed cycles  
  
 
 ## 👨‍💻 About Me
